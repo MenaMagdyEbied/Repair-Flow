@@ -64,8 +64,8 @@ namespace RepairFlow.DAL
     {
         public int Id { get; set; }
         public string Code { get; set; } = string.Empty;
-        public string  Name { get; set; } = string.Empty;
-        public string  Type { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
         public decimal SellingPrice { get; set; }  
         public int Quantity { get; set; }
         public bool IsAvailable { get; set; }

@@ -1,8 +1,3 @@
-using RepairFlow.BLL;
-using RepairFlow.DAL;
-using RepairFlow.DAL.Repositories;
-using RepairFlow.Models;
-
 namespace RepairFlow.UI.Forms
 {
     public partial class MainForm : Form
@@ -20,10 +15,10 @@ namespace RepairFlow.UI.Forms
         private static readonly Color FgDelivered = Color.FromArgb(107, 33, 168);
 
         //  active sidebar filter state 
-        private Panel? _activeFilterPanel;
+        private Panel?  _activeFilterPanel;
         private Button? _activeFilterBtn;
 
-
+      
         private static readonly (string Name, decimal BuyPrice, int ProfitPct)[] _inventory =
         {
             ("Samsung S24 شاشة",         320,  25),
@@ -39,26 +34,16 @@ namespace RepairFlow.UI.Forms
             ("Samsung شاحن أصلي",          50,  30),
             ("Samsung سماعة داخلية",       40,  30),
 
-            ("iPhone 15 Pro شاشة",       500,  20),
-            ("iPhone 15 شاشة",           420,  20),
-            ("iPhone 14 Pro شاشة",       400,  20),
-            ("iPhone 14 شاشة",           350,  20),
-            ("iPhone 13 شاشة",           300,  20),
-            ("iPhone 12 شاشة",           250,  20),
-            ("iPhone 11 شاشة",           200,  20),
-            ("iPhone 15 Pro بطارية",      90,  25),
-            ("iPhone 14 بطارية",           80,  25),
-            ("iPhone 13 بطارية",           70,  25),
-            ("iPhone شاحن أصلي",          60,  25),
+        private string _receiptSavePath = @"C:\RepairFlow_Receipts";
+        private Label? _lblSavePath;
 
-            ("Huawei P60 شاشة",          220,  25),
-            ("Huawei P50 شاشة",          190,  25),
-            ("Huawei Nova 11 شاشة",      150,  25),
-            ("Huawei Nova 10 شاشة",      130,  25),
-            ("Huawei P60 بطارية",          65,  30),
-            ("Huawei شاحن أصلي",          45,  30),
+        // Pagination State
+        private int _currentPage = 1;
+        private int _pageSize = 35;
+        private string _currentStatusFilter = "الكل";
+        private List<Device> _filteredDevices = new();
 
-
+            
             ("Oppo Find X6 شاشة",        200,  25),
             ("Oppo Reno 10 شاشة",        140,  25),
             ("Oppo A98 شاشة",            110,  25),
@@ -66,111 +51,111 @@ namespace RepairFlow.UI.Forms
             ("Oppo Reno 10 بطارية",        55,  30),
             ("Oppo شاحن سريع",             40,  30),
 
-            ("Realme GT5 شاشة",          180,  25),
-            ("Realme 11 Pro شاشة",       130,  25),
-            ("Realme C55 شاشة",           80,  25),
-            ("Realme بطارية",              50,  30),
+        // -----------------------------------------------
+        public MainForm()
+        {
+            InitializeComponent();
 
             ("Infinix Note 30 شاشة",     100,  30),
             ("Infinix Hot 30 شاشة",       70,  30),
             ("Infinix Smart 7 شاشة",      55,  30),
             ("Infinix بطارية",             40,  30),
 
-
+            
             ("Sony Xperia 1 V شاشة",     380,  20),
             ("Sony Xperia 5 V شاشة",     300,  20),
             ("Sony Xperia 10 V شاشة",    180,  20),
             ("Sony بطارية",                75,  25),
 
-            ("بطارية عامة",                45,  35),
-            ("شاشة جرافيك عامة",          60,  30),
-            ("ميكروفون",                   25,  40),
-            ("سماعة خارجية",               30,  40),
-            ("مدخل شاحن",                  35,  35),
-            ("زجاج شاشة",                  20,  50),
-            ("كاميرا خلفية",               80,  30),
-            ("كاميرا أمامية",              50,  30),
-            ("لوحة مفاتيح",                30,  35),
-            ("شاحن لاسلكي",                55,  30),
+            _deviceService = new DeviceService(deviceRepo, partRepo, customerRepo);
+            _partService   = new SparePartService(partRepo);
+
+            _waService = new WhatsAppService();
+            _printService = new PrintService();
+            _backupService = new BackupService();
+
+        private readonly string[,] _rows =
+        {
+            // R                   Client              Device    Model          Phone          DateIn                S               Fault               Acc                           Cost  DateOut               Warranty
+            { "SR-2603-004",  " محمد حمدي",    "LG",     "180",         "01500950666", "2026/03/05 01:54 ص", "وارد جديد",   "proken screen",    "ريموت ، كابل ، حامل",       "",    "",                    "0" },
+            { "SR-2603-003",  "عمرو محمد",     "Samsung","Smart 170",   "01500950666", "2026/03/05 01:54 ص", "وارد جديد",   "proken screen",    "ريموت ، كابل ، حامل",       "",    "",                    "0" },
+            { "SR-20260212-4","امير أحمد",     "Samsung",     "S25",        "01500950666", "2026/02/12",         "وارد جديد",   "",                 "",                           "",    "",                    "0" },
+            { "SR-2603-003",  "فارس محمد",     "Samsung","Smart 170",   "01500950666", "2026/03/05 01:54 ص", "قيد الفحص",  "proken screen",    "ريموت ، كابل ، حامل",       "",    "",                    "0" },
+            { "SR-2602-002",  "محمود جمال",           "220",    "220",         "01211879320", "2026/02/14",         "قيد الفحص",  "",                 "",                           "",    "",                    "0" },
+            { "SR-2602-006",  "تامر محمود",           "Samsung",     "S24",    "01211879522", "2026/02/27 04:08 ص", "جاهز",        "مممم",             "نننننننننننننننننننن",       "14",  "2026/03/03 02:22 ص",  "6" },
+            { "SR-2602-001",  "مصطفي محمود",          "Samsung",      "S23",           "01211879320", "2026/02/10",         "جاهز",        "",                 "",                           "",    "",                    "0" },
+            { "SR-2603-002",  "إبراهيم محمد",  "LG",     "Smart 170",   "01111047409", "2026/03/05 01:33 ص", "تم التسليم", "",                 "",                           "600", "2026/03/05 01:34 ص",  "3" },
+            { "SR-2603-001",  "مينا اشرف",          "lg",     "180",         "01500950666", "2026/03/05",         "تم التسليم", "",                 "",                           "",    "",                    "0" },
+            { "SR-2602-005",  "حمدين محمد",    "LG",     "LG12",        "01500950666", "2026/02/20",         "تم التسليم", "",                 "",                           "600", "2026/03/05",           "3" },
+            { "SR-2602-004",  "مريم جمال",           "1200",   "21",          "01211985463", "2026/02/16",         "تم التسليم", "",                 "",                           "",    "",                    "0" },
+            { "SR-2602-003",  "ساندي اشرف",           "220",    "220",         "01211879320", "2026/02/15",         "تم التسليم", "",                 "",                           "",    "",                    "0" },
+            { "SR-20260212-2","اميره محمد",            "LG",     "270",         "01500950666", "2026/02/12",         "تم التسليم", "",                 "",                           "",    "",                    "0" },
         };
 
-        private static decimal SellPrice((string Name, decimal BuyPrice, int ProfitPct) item)
-            => Math.Round(item.BuyPrice * (1 + item.ProfitPct / 100m), 0);
-
-        private List<Device> _devices = new();
-
-        private string GenerateReceiptNumber()
-        {
-            try
-            {
-                using var context = new AppDbContext();
-                var deviceService = new DeviceService(new DeviceRepository(context));
-                return deviceService.GetNextReceiptNumber();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"خطأ في إنشاء رقم الإيصال: {ex.Message}", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return "ERROR";
-            }
-        }
-
-        // ─── Public method called by ReciptForm ───────────────────────────────
-        public void AddNewDevice(Device device)
-        {
-            LoadData();
-            RefreshSidebarCounts();
-            ShowDetail(0);
-        }
-
-        private void RefreshSidebarCounts()
-        {
-            // Update badge labels in the sidebar filter buttons
-            foreach (Control ctrl in flpFilters.Controls)
-            {
-                if (ctrl is not Panel pnl) continue;
-                var badge = pnl.Controls.OfType<Label>().FirstOrDefault();
-                var btn = pnl.Controls.OfType<Button>().FirstOrDefault();
-                if (badge == null || btn == null) continue;
-                string label = btn.Text;
-                badge.Text = label == "الكل"
-                    ? _devices.Count.ToString()
-                    : _devices.Count(d => StatusLabel(d.Status) == label).ToString();
-            }
-            lblPagInfo.Text = $"الموجود: {_devices.Count}";
-        }
+        // column indices in _rows
+        private const int C_Receipt=0, C_Client=1, C_Device=2, C_Model=3, C_Phone=4;
+        private const int C_DateIn=5, C_Status=6, C_Fault=7, C_Acc=8;
+        private const int C_Cost=9, C_DateOut=10, C_Warranty=11;
 
         // ─────────────────────────────────────────────────────────────────
         public MainForm()
         {
             InitializeComponent();
+            BuildSidebar();
             LoadData();
             BuildSidebar();
             RefreshSidebarCounts();
             LoadPartsCombo();
+            InitializeEditControls();
             ShowDetail(0);
             WireEvents();
         }
-        //  SIDEBAR
 
+        private void InitializeEditControls()
+        {
+            _txtClient = CreateEditTextBox(valClient);
+            _txtPhone  = CreateEditTextBox(valPhone);
+            _txtDevice = CreateEditTextBox(valDevice);
+            _txtModel = CreateEditTextBox(valModel);
+            _txtFault = CreateEditTextBox(valFault);
+            _txtAcc = CreateEditTextBox(valAccessories);
+        }
+
+        private TextBox CreateEditTextBox(Label target)
+        {
+            var txt = new TextBox
+            {
+                Bounds = target.Bounds,
+                Font = target.Font,
+                Visible = false,
+                RightToLeft = RightToLeft.Yes
+            };
+            target.Parent?.Controls.Add(txt);
+            return txt;
+        }
+
+        // SIDEBAR
         private void BuildSidebar()
         {
             Color navy = Color.FromArgb(44, 62, 107);
             Color sideBg = Color.FromArgb(248, 248, 248);
 
-            //  section 
-            AddSidebarLabel("الحالات", 8.5f, Color.FromArgb(150, 150, 150),
-                            new Padding(0, 10, 0, 6), 192, 20);
+            var counts = _deviceService.GetStatusCounts();
 
-            AddFilter("≡", "الكل", navy, CountStatus(""), true);
-            AddFilter("📥", "وارد جديد", FgNew, CountStatus("وارد جديد"), false);
-            AddFilter("🔍", "قيد الفحص", FgInspect, CountStatus("قيد الفحص"), false);
-            AddFilter("🔧", "تحت الإصلاح", FgRepair, CountStatus("تحت الإصلاح"), false);
-            AddFilter("✓", "جاهز", FgReady, CountStatus("جاهز"), false);
-            AddFilter("🚚", "تم التسليم", FgDelivered, CountStatus("تم التسليم"), false);
+            AddSidebarLabel("الحالات", 8.5f, Color.FromArgb(150, 150, 150),
+                            new Padding(0, 10, 0, 6), 222, 20);
+
+            AddFilter("≡",  "الكل",        navy,        CountStatus(""), true);
+            AddFilter("📥", "وارد جديد",   FgNew,       CountStatus("وارد جديد"),   false);
+            AddFilter("🔍", "قيد الفحص",   FgInspect,   CountStatus("قيد الفحص"),   false);
+            AddFilter("🔧", "تحت الإصلاح", FgRepair,    CountStatus("تحت الإصلاح"), false);
+            AddFilter("✓",  "جاهز",        FgReady,     CountStatus("جاهز"),         false);
+            AddFilter("🚚", "تم التسليم",  FgDelivered, CountStatus("تم التسليم"),   false);
 
             AddSeparator(16, 10);
 
-
+            
+            int warrantyCount = 1; 
             AddSidebarLabel($"المخزون (منخفض: 1 | نافد: 1)", 7.5f,
                             Color.FromArgb(150, 150, 150), new Padding(4, 0, 4, 2), 184, 18);
             AddSidebarLabel("الموجود: 3", 8f,
@@ -181,7 +166,7 @@ namespace RepairFlow.UI.Forms
             btnInventory.Margin = new Padding(4, 0, 4, 4);
             flpFilters.Controls.Add(btnInventory);
 
-
+           
             var btnDash = MakeSidebarBtn("📊  Dashboard", Color.FromArgb(52, 73, 94), Color.White);
             btnDash.Margin = new Padding(4, 0, 4, 6);
             flpFilters.Controls.Add(btnDash);
@@ -189,35 +174,55 @@ namespace RepairFlow.UI.Forms
             AddSeparator(10, 10);
 
             AddSidebarLabel("النسخ الاحتياطي", 7.5f,
-                            Color.FromArgb(150, 150, 150), new Padding(4, 0, 4, 4), 184, 18);
+                            Color.FromArgb(150, 150, 150), new Padding(4, 0, 4, 4), 214, 18);
 
-            var btnBackup = MakeSidebarBtn("💾  Backup", Color.FromArgb(44, 62, 107), Color.White);
+            var btnBackup = MakeSidebarBtn("  Backup", Color.FromArgb(44, 62, 107), Color.White, icon: IconChar.CloudArrowDown);
+            btnBackup.Click += (s, e) => DoBackup();
             flpFilters.Controls.Add(btnBackup);
 
-            var btnRestore = MakeSidebarBtn("🔄  Restore", Color.FromArgb(52, 152, 219), Color.White);
+            var btnRestore = MakeSidebarBtn("  Restore", Color.FromArgb(52, 152, 219), Color.White, icon: IconChar.RotateLeft);
+            btnRestore.Click += (s, e) => DoRestore();
             flpFilters.Controls.Add(btnRestore);
 
             AddSeparator(10, 8);
 
             AddSidebarLabel("مكان حفظ الإيصالات", 7.5f,
-                            Color.FromArgb(150, 150, 150), new Padding(4, 4, 4, 2), 184, 18);
-            AddSidebarLabel("C:", 7.5f,
-                            Color.FromArgb(80, 80, 80), new Padding(4, 0, 4, 4), 184, 18);
+                            Color.FromArgb(150, 150, 150), new Padding(4, 4, 4, 2), 214, 18);
 
-            var btnOpen = MakeSidebarBtn("📁  فتح المجلد", Color.White,
-                                         Color.FromArgb(44, 62, 107), bordered: true);
+            _lblSavePath = new Label
+            {
+                Text = _receiptSavePath,
+                Font = new Font("Segoe UI", 7.5f),
+                ForeColor = Color.FromArgb(80, 80, 80),
+                Size = new Size(214, 18),
+                Margin = new Padding(4, 0, 4, 4),
+                TextAlign = ContentAlignment.MiddleRight,
+                AutoEllipsis = true,
+            };
+            flpFilters.Controls.Add(_lblSavePath);
+
+            var btnOpen = MakeSidebarBtn("  فتح المجلد", Color.White, Color.FromArgb(44, 62, 107), true, icon: IconChar.FolderOpen);
+            btnOpen.Click += (s, e) => OpenReceiptsFolder();
             flpFilters.Controls.Add(btnOpen);
 
-            var btnChange = MakeSidebarBtn("📍  تغيير المكان", Color.FromArgb(44, 62, 107), Color.White);
+            var btnChange = MakeSidebarBtn("  تغيير المكان", Color.FromArgb(44, 62, 107), Color.White, icon: IconChar.LocationDot);
+            btnChange.Click += (s, e) => ChangeReceiptsFolder();
             flpFilters.Controls.Add(btnChange);
-        }
 
         private string CountStatus(string s) =>
-            s == "" ? _devices.Count.ToString() :
-            _devices.Count(d => StatusLabel(d.Status) == s).ToString();
+            s == "" ? _rows.GetLength(0).ToString() :
+            Enumerable.Range(0, _rows.GetLength(0))
+                      .Count(i => _rows[i, C_Status] == s).ToString();
+
+            var btnLogin = MakeSidebarBtn("  اسم المستخدم", Color.FromArgb(46, 204, 113), Color.White, icon: IconChar.SignInAlt);
+            flpFilters.Controls.Add(btnLogin);
+
+            var btnLogout = MakeSidebarBtn("  تسجيل الخروج", Color.FromArgb(231, 76, 60), Color.White, icon: IconChar.SignOutAlt);
+            flpFilters.Controls.Add(btnLogout);
+        }
 
         private void AddSidebarLabel(string text, float fontSize, Color fg,
-                                     Padding margin, int width, int height)
+         Padding margin, int width, int height)
         {
             flpFilters.Controls.Add(new Label
             {
@@ -234,24 +239,29 @@ namespace RepairFlow.UI.Forms
         {
             flpFilters.Controls.Add(new Label
             {
-                Size = new Size(184, 1),
+                Size = new Size(214, 1),
                 Margin = new Padding(4, topMargin, 4, bottomMargin),
                 BackColor = Color.FromArgb(218, 218, 218)
             });
         }
 
-        private Button MakeSidebarBtn(string text, Color bg, Color fg, bool bordered = false)
+        private Button MakeSidebarBtn(string text, Color bg, Color fg, bool bordered = false, IconChar icon = IconChar.None)
         {
-            var b = new Button
+            var b = new IconButton
             {
                 Text = text,
-                Size = new Size(184, 30),
+                IconChar = icon,
+                IconColor = fg,
+                IconSize = 18,
+                TextImageRelation = TextImageRelation.TextBeforeImage,
+                Size = new Size(214, 32),
                 Margin = new Padding(4, 0, 4, 5),
                 BackColor = bg,
                 ForeColor = fg,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 8.5f),
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                TextAlign = ContentAlignment.MiddleRight
             };
             b.FlatAppearance.BorderSize = bordered ? 1 : 0;
             if (bordered) b.FlatAppearance.BorderColor = Color.FromArgb(44, 62, 107);
@@ -259,7 +269,7 @@ namespace RepairFlow.UI.Forms
             return b;
         }
 
-        private void AddFilter(string icon, string label, Color badgeColor,
+        private void AddFilter(IconChar icon, string label, Color badgeColor,
                                string count, bool active)
         {
             Color navy = Color.FromArgb(44, 62, 107);
@@ -268,7 +278,7 @@ namespace RepairFlow.UI.Forms
 
             var pnl = new Panel
             {
-                Size = new Size(192, 38),
+                Size = new Size(222, 38),
                 Margin = new Padding(0, 0, 0, 3),
                 BackColor = active ? activeBg : sideBg,
                 Cursor = Cursors.Hand
@@ -285,19 +295,25 @@ namespace RepairFlow.UI.Forms
                 Font = new Font("Segoe UI", 8f, FontStyle.Bold)
             };
 
-            var btn = new Button
+            var btn = new IconButton
             {
                 Text = label,
-                Location = new Point(38, 0),
-                Size = new Size(154, 38),
-                TextAlign = ContentAlignment.MiddleRight,
-                Padding = new Padding(0, 0, 8, 0),
+                IconChar = icon,
+                IconColor = active ? navy : Color.FromArgb(60, 60, 60),
+                IconSize = 18,
+                TextImageRelation = TextImageRelation.ImageBeforeText,
+                ImageAlign = ContentAlignment.MiddleLeft, // Visual Right in RTL
+                TextAlign = ContentAlignment.MiddleLeft,  // Visual Right in RTL
+                RightToLeft = RightToLeft.Yes,
+                Location = new Point(36, 0),
+                Size = new Size(186, 38),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.Transparent,
                 ForeColor = active ? navy : Color.FromArgb(60, 60, 60),
                 Font = new Font("Segoe UI", 9.5f, active ? FontStyle.Bold : FontStyle.Regular),
                 Cursor = Cursors.Hand,
-                TabStop = false
+                TabStop = false,
+                Padding = new Padding(0, 0, 0, 0)
             };
             btn.FlatAppearance.BorderSize = 0;
 
@@ -321,114 +337,117 @@ namespace RepairFlow.UI.Forms
             Color sideBg = Color.FromArgb(248, 248, 248);
             Color activeBg = Color.FromArgb(229, 236, 250);
 
-            // reset previous
             if (_activeFilterPanel != null)
             {
                 _activeFilterPanel.BackColor = sideBg;
-                if (_activeFilterBtn != null)
+                if (_activeFilterBtn is IconButton oldBtn)
                 {
-                    _activeFilterBtn.ForeColor = Color.FromArgb(60, 60, 60);
-                    _activeFilterBtn.Font = new Font("Segoe UI", 9.5f, FontStyle.Regular);
+                    oldBtn.ForeColor = Color.FromArgb(60, 60, 60);
+                    oldBtn.IconColor = Color.FromArgb(60, 60, 60);
+                    oldBtn.Font = new Font("Segoe UI", 9.5f, FontStyle.Regular);
                 }
             }
 
-            // activate new
             pnl.BackColor = activeBg;
-            btn.ForeColor = navy;
-            btn.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            if (btn is IconButton newBtn)
+            {
+                newBtn.ForeColor = navy;
+                newBtn.IconColor = navy;
+                newBtn.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            }
             _activeFilterPanel = pnl;
-            _activeFilterBtn = btn;
+            _activeFilterBtn   = btn;
 
-            // filter rows
-            foreach (DataGridViewRow row in dgvOrders.Rows)
-            {
-                string s = row.Cells["colStatus"].Value?.ToString() ?? "";
-                row.Visible = (filter == "الكل") || (s == filter);
-            }
+            _currentPage = 1; // Reset to page 1 on filter change
+            LoadData(filter);
         }
 
-        private void LoadData()
+        private void LoadData(string statusFilter = "الكل")
         {
-            try
+            dgvOrders.Rows.Clear();
+            int n = _rows.GetLength(0);
+            for (int i = 0; i < n; i++)
             {
-                using var context = new AppDbContext();
-                var deviceService = new DeviceService(new DeviceRepository(context));
-                _devices = deviceService.GetAllDevices();
+                string device = $"{_rows[i, C_Device]} • {_rows[i, C_Model]}";
+                int idx = dgvOrders.Rows.Add(
+                    _rows[i, C_Receipt],
+                    _rows[i, C_Client],
+                    device,
+                    _rows[i, C_Phone],
+                    _rows[i, C_DateIn].Split(' ')[0],   // date only
+                    _rows[i, C_Status]);
 
-                dgvOrders.Rows.Clear();
-                for (int i = 0; i < _devices.Count; i++)
-                {
-                    var device = _devices[i];
-                    string deviceLabel = $"{device.DeviceName} • {device.Model}";
-                    int idx = dgvOrders.Rows.Add(
-                        device.ReceiptNumber,
-                        device.Customer?.Name ?? "—",
-                        deviceLabel,
-                        device.Customer?.Phone ?? "—",
-                        device.ReceivedAt.ToString("yyyy/MM/dd"),
-                        StatusLabel(device.Status));
-
-                    // colour status cell
-                    var (bg, fg) = StatusColors(StatusLabel(device.Status));
-                    var cell = dgvOrders.Rows[idx].Cells["colStatus"];
-                    cell.Style.BackColor = bg;
-                    cell.Style.ForeColor = fg;
-                    cell.Style.Font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
-                    cell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                }
-
-                if (dgvOrders.Rows.Count > 0)
-                    dgvOrders.Rows[0].Selected = true;
-
-                lblPagInfo.Text = $"الموجود: {_devices.Count}";
+                // colour status cell
+                var (bg, fg) = StatusColors(_rows[i, C_Status]);
+                var cell = dgvOrders.Rows[idx].Cells["colStatus"];
+                cell.Style.BackColor = bg;
+                cell.Style.ForeColor = fg;
+                cell.Style.Font      = new Font("Segoe UI", 8.5f, FontStyle.Bold);
+                cell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"خطأ في تحميل البيانات: {ex.Message}", "خطأ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+
+            if (dgvOrders.Rows.Count > 0)
+                dgvOrders.Rows[0].Selected = true;
+
+            lblPagInfo.Text = $"الموجود: {n}";
         }
 
-        private void ShowDetail(int dataIndex)
+        private void ShowDetail(int gridRowIndex)
         {
-            if (dataIndex < 0 || dataIndex >= _devices.Count) return;
+            if (dataIndex < 0 || dataIndex >= _rows.GetLength(0)) return;
 
-            var device = _devices[dataIndex];
-            valReceipt.Text = device.ReceiptNumber;
-            valClient.Text = device.Customer?.Name ?? "—";
-            valPhone.Text = device.Customer?.Phone ?? "—";
-            valDevice.Text = device.DeviceName;
-            valModel.Text = device.Model;
-            valFault.Text = string.IsNullOrEmpty(device.Fault) ? "—" : device.Fault;
-            valAccessories.Text = string.IsNullOrEmpty(device.Accessories) ? "—" : device.Accessories;
-            valDateIn.Text = device.ReceivedAt.ToString("yyyy/MM/dd");
-            valDateOut.Text = device.DeliveredAt?.ToString("yyyy/MM/dd") ?? "لم يتم التسليم";
-            valCost.Text = device.RepairCost.HasValue ? $"{device.RepairCost:0} ج" : "—";
+            string receipt = _rows[dataIndex, C_Receipt];
+            string client = _rows[dataIndex, C_Client];
+            string phone = _rows[dataIndex, C_Phone];
+            string device = _rows[dataIndex, C_Device];
+            string model = _rows[dataIndex, C_Model];
+            string fault = _rows[dataIndex, C_Fault];
+            string acc = _rows[dataIndex, C_Acc];
+            string dateIn = _rows[dataIndex, C_DateIn];
+            string dateOut = _rows[dataIndex, C_DateOut];
+            string cost = _rows[dataIndex, C_Cost];
+            string status = _rows[dataIndex, C_Status];
+            string warranty = _rows[dataIndex, C_Warranty];
 
-            int wMonths = device.WarrantyMonths;
+            valReceipt.Text = receipt;
+            valClient.Text = client;
+            valPhone.Text = phone;
+            valDevice.Text = device;
+            valModel.Text = model;
+            valFault.Text = string.IsNullOrEmpty(fault)   ? "—" : fault;
+            valAccessories.Text = string.IsNullOrEmpty(acc)     ? "—" : acc;
+            valDateIn.Text = string.IsNullOrEmpty(dateIn)  ? "—" : dateIn;
+            valDateOut.Text = string.IsNullOrEmpty(dateOut) ? "لم يتم التسليم" : dateOut;
+            valCost.Text = string.IsNullOrEmpty(cost)    ? "—" : $"{cost} ج";
+
+            int wMonths = int.TryParse(warranty, out int w) ? w : 0;
             pnlWarranty.Visible = wMonths > 0;
             if (wMonths > 0)
                 valWarranty.Text = $"{wMonths} شهور";
 
-            string status = StatusLabel(device.Status);
+            // status combo
             int si = cmbStatus.Items.IndexOf(status);
             if (si >= 0) cmbStatus.SelectedIndex = si;
-            var (cbBg, cbFg) = StatusColors(status);
+            var (cbBg, cbFg) = StatusColors(statusAr);
             cmbStatus.BackColor = cbBg;
             cmbStatus.ForeColor = cbFg;
+
+            dgvParts.Rows.Clear();
+            foreach (var sp in d.DeviceSpareParts)
+            {
+                int rIdx = dgvParts.Rows.Add(sp.SparePart?.Name, sp.QuantityUsed, sp.UnitPrice);
+                dgvParts.Rows[rIdx].Tag = sp.Id;
+            }
+            ResizeParts();
+            RecalcParts();
 
             pnlQR.Invalidate();
         }
 
-
+      
         private void WireEvents()
         {
-            // btnNew → open receipt form
-            btnNew.Click += (s, e) =>
-            {
-                string nextReceipt = GenerateReceiptNumber();
-                var form = new ReciptForm(this, nextReceipt);
-                form.ShowDialog(this);
-            };
+            //  title bar
             pnlTitleBar.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
@@ -437,45 +456,48 @@ namespace RepairFlow.UI.Forms
                 Fill(e.Graphics, Color.FromArgb(39, 201, 63), 44, 9, 12);
             };
 
-            //  toolbar bottom line
             pnlToolbar.Paint += (s, e) =>
             {
                 using var p = new Pen(Color.FromArgb(215, 215, 215));
-                e.Graphics.DrawLine(p, 0, pnlToolbar.Height - 1,
-                                       pnlToolbar.Width, pnlToolbar.Height - 1);
+                e.Graphics.DrawLine(p, 0, pnlToolbar.Height - 1, pnlToolbar.Width, pnlToolbar.Height - 1);
             };
 
-            //  search box border 
             pnlSearch.Paint += (s, e) =>
             {
                 using var p = new Pen(Color.FromArgb(200, 200, 200));
-                e.Graphics.DrawRectangle(p, 0, 0,
-                    pnlSearch.Width - 1, pnlSearch.Height - 1);
+                e.Graphics.DrawRectangle(p, 0, 0, pnlSearch.Width - 1, pnlSearch.Height - 1);
             };
 
-            //  sidebar right border 
             pnlSidebar.Paint += (s, e) =>
             {
                 using var p = new Pen(Color.FromArgb(218, 218, 218));
-                e.Graphics.DrawLine(p, pnlSidebar.Width - 1, 0,
-                                       pnlSidebar.Width - 1, pnlSidebar.Height);
+                e.Graphics.DrawLine(p, pnlSidebar.Width - 1, 0, pnlSidebar.Width - 1, pnlSidebar.Height);
             };
 
-            //  detail left border + header bottom line
+            btnNextPage.Click += (s, e) => {
+                _currentPage++;
+                LoadData(_currentStatusFilter);
+            };
+
+            btnPrevPage.Click += (s, e) => {
+                _currentPage--;
+                LoadData(_currentStatusFilter);
+            };
+
             pnlDetail.Paint += (s, e) =>
             {
                 using var p = new Pen(Color.FromArgb(218, 218, 218));
                 e.Graphics.DrawLine(p, 0, 0, 0, pnlDetail.Height);
             };
+
             pnlDtlHeader.Paint += (s, e) =>
             {
                 using var p = new Pen(Color.FromArgb(218, 218, 218));
-                e.Graphics.DrawLine(p, 0, pnlDtlHeader.Height - 1,
-                                       pnlDtlHeader.Width, pnlDtlHeader.Height - 1);
+                e.Graphics.DrawLine(p, 0, pnlDtlHeader.Height - 1, dgvOrders.Width, pnlDtlHeader.Height - 1);
             };
 
             // box borders 
-            boxIn.Paint += PanelBorder;
+            boxIn.Paint  += PanelBorder;
             boxOut.Paint += PanelBorder;
             pnlCost.Paint += PanelBorder;
             pnlWarranty.Paint += PanelBorder;
@@ -484,14 +506,8 @@ namespace RepairFlow.UI.Forms
 
             pnlQR.Paint += QrPaint;
 
-            //  grid selection
-            dgvOrders.SelectionChanged += (s, e) =>
-            {
-                if (dgvOrders.SelectedRows.Count > 0)
-                    ShowDetail(dgvOrders.SelectedRows[0].Index);
-            };
+            dgvOrders.SelectionChanged += DgvOrders_SelectionChanged;
 
-            // search
             txtSearch.TextChanged += (s, e) =>
             {
                 string q = txtSearch.Text.Trim().ToLower();
@@ -507,34 +523,80 @@ namespace RepairFlow.UI.Forms
             };
 
 
-
+           
             //  spare parts combo 
             cmbPartSearch.SelectedIndexChanged += CmbPartSearch_SelectedIndexChanged;
             cmbPartSearch.TextChanged += (s, e) =>
             {
                 string typed = cmbPartSearch.Text.Trim();
-                var found = _inventory.FirstOrDefault(i => i.Name == typed);
-                if (found != default)
-                    numPartPrice.Value = SellPrice(found);
+                var found = _dbInventory.FirstOrDefault(i => i.Name.Equals(typed, StringComparison.OrdinalIgnoreCase));
+                if (found != null)
+                {
+                    _selectedPartUnitPrice = found.SellingPrice;
+                    numPartPrice.Value = _selectedPartUnitPrice * numPartQty.Value;
+                }
             };
 
-
+    
             btnAddPart.Click += BtnAddPart_Click;
-
             dgvParts.CellClick += DgvParts_CellClick;
 
-            dgvParts.CellEndEdit += (s, e) => RecalcParts();
-
-            //  status combo
             cmbStatus.SelectedIndexChanged += (s, e) =>
             {
-                string sel = cmbStatus.SelectedItem?.ToString() ?? "";
-                var (bg, fg) = StatusColors(sel);
+                if (dgvOrders.SelectedRows.Count == 0) return;
+                int idx = dgvOrders.SelectedRows[0].Index;
+                string receipt = dgvOrders.Rows[idx].Cells[0].Value?.ToString() ?? "";
+                string selAr = cmbStatus.SelectedItem?.ToString() ?? "";
+                
+                var (bg, fg) = StatusColors(selAr);
                 cmbStatus.BackColor = bg;
                 cmbStatus.ForeColor = fg;
+
+                _deviceService.UpdateStatus(receipt, selAr);
+                
+                var updated = _deviceService.GetDeviceByReceipt(receipt);
+                if (updated != null)
+                {
+                    // Update the row in the grid
+                    dgvOrders.Rows[idx].Cells["colStatus"].Value = selAr;
+                    dgvOrders.Rows[idx].Cells["colStatus"].Style.BackColor = bg;
+                    dgvOrders.Rows[idx].Cells["colStatus"].Style.ForeColor = fg;
+                    valDateOut.Text = updated.DeliveredAt?.ToString("yyyy/MM/dd hh:mm tt") ?? "لم يتم التسليم";
+
+                    // Sync with our master list and filtered list to keep data consistent
+                    int masterIdx = _devices.FindIndex(x => x.ReceiptNumber == receipt);
+                    if (masterIdx >= 0) _devices[masterIdx] = updated;
+
+                    int filterIdx = _filteredDevices.FindIndex(x => x.ReceiptNumber == receipt);
+                    if (filterIdx >= 0) _filteredDevices[filterIdx] = updated;
+                }
+                RefreshSidebarCounts();
             };
 
-            // form resize — reposition logo
+            btnWA.Click += (s, e) => {
+                if (dgvOrders.SelectedRows.Count == 0 || _isLoadingData) return;
+                int idx = dgvOrders.SelectedRows[0].Index;
+                string receipt = dgvOrders.Rows[idx].Cells[0].Value?.ToString() ?? "";
+                var d = _filteredDevices.FirstOrDefault(x => x.ReceiptNumber == receipt);
+                if (d == null) return;
+
+                string url = _waService.GenerateWhatsAppUrl(d);
+                if (!string.IsNullOrEmpty(url)) 
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = url, UseShellExecute = true });
+            };
+
+            btnPr.Click += (s, e) => {
+                 if (dgvOrders.SelectedRows.Count == 0 || _isLoadingData) return;
+                 int idx = dgvOrders.SelectedRows[0].Index;
+                 string receipt = dgvOrders.Rows[idx].Cells[0].Value?.ToString() ?? "";
+                 var d = _filteredDevices.FirstOrDefault(x => x.ReceiptNumber == receipt);
+                 if (d == null) return;
+                 
+                 _printService.PreviewReceipt(d);
+            };
+
+            btnEditReceipt.Click += btnEdit_Click;
+
             Resize += (s, e) =>
             {
                 int right = pnlToolbar.Width - 8;
@@ -543,7 +605,11 @@ namespace RepairFlow.UI.Forms
             };
         }
 
-        //  drawing helpers
+        private void btnEdit_Click(object? sender, EventArgs e)
+        {
+            ToggleEditMode();
+        }
+
         private static void Fill(Graphics g, Color c, int x, int y, int d)
         {
             using var b = new SolidBrush(c);
@@ -557,70 +623,62 @@ namespace RepairFlow.UI.Forms
             e.Graphics.DrawRectangle(pen, 0, 0, p.Width - 1, p.Height - 1);
         }
 
-        private static void QrPaint(object? s, PaintEventArgs e)
+        private void QrPaint(object? s, PaintEventArgs e)
         {
             if (s is not Panel p) return;
             using var border = new Pen(Color.FromArgb(218, 218, 218));
             e.Graphics.DrawRectangle(border, 0, 0, p.Width - 1, p.Height - 1);
 
-            using var brush = new SolidBrush(Color.FromArgb(44, 62, 107));
-            var rng = new Random(42);
+            using var brush = new SolidBrush(Color.Black);
+            int seed = valReceipt.Text.GetHashCode();
+            var rng = new Random(seed);
             int cs = 5, m = 4;
             int cols = (p.Width - m * 2) / cs;
             int rows = (p.Height - m * 2) / cs;
             for (int r = 0; r < rows; r++)
                 for (int c = 0; c < cols; c++)
                 {
-                    bool corner =
-                        (r < 4 && c < 4) ||
-                        (r < 4 && c >= cols - 4) ||
-                        (r >= rows - 4 && c < 4);
+                    bool corner = (r < 4 && c < 4) || (r < 4 && c >= cols - 4) || (r >= rows - 4 && c < 4);
                     if (corner || rng.Next(4) == 0)
                         e.Graphics.FillRectangle(brush, m + c * cs, m + r * cs, cs - 1, cs - 1);
                 }
         }
 
-        // status colors
         private static (Color bg, Color fg) StatusColors(string s) => s switch
         {
-            "وارد جديد" => (BgNew, FgNew),
+            "وارد جديد"  => (BgNew, FgNew),
             "قيد الفحص" => (BgInspect, FgInspect),
             "تحت الإصلاح" => (BgRepair, FgRepair),
-            "جاهز" => (BgReady, FgReady),
-            "تم التسليم" => (BgDelivered, FgDelivered),
-            _ => (Color.White, Color.Black)
+            "جاهز"  => (BgReady, FgReady),
+            "تم التسليم"  => (BgDelivered, FgDelivered),_=> (Color.White,  Color.Black)
         };
 
-        private static string StatusLabel(RepairStatus status) => status switch
-        {
-            RepairStatus.NewArrival => "وارد جديد",
-            RepairStatus.UnderInspection => "قيد الفحص",
-            RepairStatus.UnderRepair => "تحت الإصلاح",
-            RepairStatus.Ready => "جاهز",
-            RepairStatus.Delivered => "تم التسليم",
-            _ => "غير معروف"
-        };
-
-        // SPARE PARTS LOGIC
+       
+      // SPARE PARTS LOGIC
         private void LoadPartsCombo()
         {
             cmbPartSearch.Items.Clear();
-            foreach (var item in _inventory)
+            _dbInventory = _partService.GetInventory();
+            foreach (var item in _dbInventory)
                 cmbPartSearch.Items.Add(item.Name);
         }
 
         private void CmbPartSearch_SelectedIndexChanged(object? s, EventArgs e)
         {
             string selected = cmbPartSearch.Text.Trim();
-            var found = _inventory.FirstOrDefault(i => i.Name == selected);
-            if (found != default)
-                numPartPrice.Value = SellPrice(found);
+            var found = _dbInventory.FirstOrDefault(i => i.Name == selected);
+            if (found != null)
+            {
+                _selectedPartUnitPrice = found.SellingPrice;
+                numPartPrice.Value = _selectedPartUnitPrice * numPartQty.Value;
+            }
         }
+
         private void BtnAddPart_Click(object? s, EventArgs e)
         {
-            string name = cmbPartSearch.Text.Trim();
-            int qty = (int)numPartQty.Value;
-            decimal price = numPartPrice.Value;
+            string name  = cmbPartSearch.Text.Trim();
+            int    qty   = (int)numPartQty.Value;
+            decimal price= numPartPrice.Value;
 
             if (string.IsNullOrEmpty(name))
             {
@@ -630,15 +688,13 @@ namespace RepairFlow.UI.Forms
             }
             cmbPartSearch.BackColor = Color.White;
 
-            dgvParts.Rows.Add(name, qty, price.ToString("0"));
+            decimal unitPrice = (qty > 0) ? price / qty : price;
+            _deviceService.AddSparePart(valReceipt.Text, name, qty, unitPrice);
 
             cmbPartSearch.Text = "";
-            numPartQty.Value = 1;
-            numPartPrice.Value = 0;
+            numPartQty.Value  = 1;
+            numPartPrice.Value  = 0;
             cmbPartSearch.Focus();
-
-            ResizeParts();
-            RecalcParts();
         }
 
         private void DgvParts_CellClick(object? s, DataGridViewCellEventArgs e)
@@ -646,9 +702,12 @@ namespace RepairFlow.UI.Forms
             if (e.ColumnIndex != dgvParts.Columns["colPartDel"]!.Index) return;
             if (e.RowIndex < 0) return;
 
-            dgvParts.Rows.RemoveAt(e.RowIndex);
-            ResizeParts();
-            RecalcParts();
+            if (dgvParts.Rows[e.RowIndex].Tag is int dpId)
+            {
+                _deviceService.RemoveSparePart(valReceipt.Text, dpId);
+                if (dgvOrders.SelectedRows.Count > 0)
+                    ShowDetail(dgvOrders.SelectedRows[0].Index);
+            }
         }
 
         private void RecalcParts()
@@ -657,8 +716,8 @@ namespace RepairFlow.UI.Forms
             foreach (DataGridViewRow row in dgvParts.Rows)
             {
                 if (row.IsNewRow) continue;
-                decimal.TryParse(row.Cells["colPartQty"].Value?.ToString(), out decimal qty);
-                decimal.TryParse(row.Cells["colPartPrice"].Value?.ToString(), out decimal price);
+                decimal.TryParse(row.Cells["colPartQty"].Value?.ToString(),   out decimal qty);
+                decimal.TryParse(row.Cells["colPartPrice"].Value?.ToString(),  out decimal price);
                 subtotal += qty * price;
             }
 
@@ -669,51 +728,53 @@ namespace RepairFlow.UI.Forms
             }
             else
             {
-                lblPartsSubtotal.Text = "";
+                lblPartsSubtotal.Text  = "";
                 lblPartsSubtotal.Visible = false;
             }
         }
 
-
+      
         private void ResizeParts()
         {
             int headerH = dgvParts.ColumnHeadersHeight;
             int rowH = dgvParts.RowTemplate.Height;
             int rowCount = dgvParts.Rows.Count;
-
             int gridH = headerH + (rowCount * rowH);
             dgvParts.Size = new Size(dgvParts.Width, gridH);
-
-            int footerH = pnlPartsFooter.Height;
-
-            pnlParts.Size = new Size(pnlParts.Width, gridH + footerH + 2);
+            pnlParts.Size = new Size(pnlParts.Width, gridH + pnlPartsFooter.Height + 2);
             ShiftControlsBelow(pnlParts);
         }
 
-
+      
         private void ShiftControlsBelow(Control targetCtrl)
         {
-            // collect all direct children of pnlDetailScroll sorted by Y
             var below = pnlDetailScroll.Controls
                 .Cast<Control>()
                 .Where(c => c != targetCtrl && c.Top >= targetCtrl.Top + 1)
                 .OrderBy(c => c.Top)
                 .ToList();
 
-            int nextY = targetCtrl.Bottom + 10;   // same gap used in designer
+            int nextY = targetCtrl.Bottom + 10;
             foreach (var ctrl in below)
             {
-                int oldY = ctrl.Top;
                 ctrl.Top = nextY;
-                nextY += ctrl.Height + (ctrl == pnlDates ? 8 :
-                              ctrl == pnlCost ? 6 :
-                              ctrl == pnlWarranty ? 6 :
-                              ctrl == pnlSt ? 10 :
-                              ctrl == btnWA ? 8 :
-                              ctrl == btnPr ? 14 :
-                              ctrl == lblQRTitle ? 20 :
-                              ctrl == pnlQR ? 10 : 8);
+                nextY   += ctrl.Height + (ctrl == pnlDates   ? 8  :
+                              ctrl == pnlCost     ? 6  :
+                              ctrl == pnlWarranty ? 6  :
+                              ctrl == pnlSt       ? 10 :
+                              ctrl == btnWA       ? 8  :
+                              ctrl == btnPr       ? 14 :
+                              ctrl == lblQRTitle  ? 20 :
+                              ctrl == pnlQR       ? 10 : 8);
             }
+            d.DeviceName = _txtDevice!.Text;
+            d.Model = _txtModel!.Text;
+            d.Fault = _txtFault!.Text;
+            d.Accessories = _txtAcc!.Text;
+
+            _deviceService.UpdateDeviceDetails(d);
+            ShowDetail(_editingIndex);
+            LoadData(); // Refresh grid
         }
     }
 }

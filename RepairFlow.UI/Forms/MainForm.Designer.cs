@@ -32,9 +32,13 @@ namespace RepairFlow.UI.Forms
             tblMain = new TableLayoutPanel();
             pnlSidebar = new Panel();
             flpFilters = new FlowLayoutPanel();
+            pnlMainContent = new Panel();
+            pnlOrdersView = new TableLayoutPanel();
             pnlGridArea = new Panel();
             pnlPagination = new Panel();
             lblPagInfo = new Label();
+            btnNextPage = new FontAwesome.Sharp.IconButton();
+            btnPrevPage = new FontAwesome.Sharp.IconButton();
             dgvOrders = new DataGridView();
             colReceipt = new DataGridViewTextBoxColumn();
             colClient = new DataGridViewTextBoxColumn();
@@ -103,6 +107,9 @@ namespace RepairFlow.UI.Forms
             pnlSearch.SuspendLayout();
             tblMain.SuspendLayout();
             pnlSidebar.SuspendLayout();
+            flpFilters.SuspendLayout();
+            pnlMainContent.SuspendLayout();
+            pnlOrdersView.SuspendLayout();
             pnlGridArea.SuspendLayout();
             pnlPagination.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvOrders).BeginInit();
@@ -247,13 +254,11 @@ namespace RepairFlow.UI.Forms
             // tblMain
             // 
             tblMain.BackColor = Color.FromArgb(222, 222, 222);
-            tblMain.ColumnCount = 3;
-            tblMain.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200F));
+            tblMain.ColumnCount = 2;
+            tblMain.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 230F));
             tblMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tblMain.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 375F));
             tblMain.Controls.Add(pnlSidebar, 0, 0);
-            tblMain.Controls.Add(pnlGridArea, 1, 0);
-            tblMain.Controls.Add(pnlDetail, 2, 0);
+            tblMain.Controls.Add(pnlMainContent, 1, 0);
             tblMain.Dock = DockStyle.Fill;
             tblMain.Location = new Point(0, 74);
             tblMain.Margin = new Padding(0);
@@ -268,11 +273,11 @@ namespace RepairFlow.UI.Forms
             pnlSidebar.BackColor = Color.FromArgb(248, 248, 248);
             pnlSidebar.Controls.Add(flpFilters);
             pnlSidebar.Dock = DockStyle.Fill;
-            pnlSidebar.Location = new Point(1080, 0);
+            pnlSidebar.Location = new Point(1050, 0);
             pnlSidebar.Margin = new Padding(0);
             pnlSidebar.Name = "pnlSidebar";
             pnlSidebar.Padding = new Padding(0, 8, 0, 8);
-            pnlSidebar.Size = new Size(200, 726);
+            pnlSidebar.Size = new Size(230, 726);
             pnlSidebar.TabIndex = 0;
             // 
             // flpFilters
@@ -284,9 +289,35 @@ namespace RepairFlow.UI.Forms
             flpFilters.Location = new Point(0, 8);
             flpFilters.Name = "flpFilters";
             flpFilters.Padding = new Padding(4, 0, 4, 0);
-            flpFilters.Size = new Size(200, 710);
+            flpFilters.Size = new Size(230, 710);
             flpFilters.TabIndex = 0;
             flpFilters.WrapContents = false;
+            // 
+            // pnlMainContent
+            // 
+            pnlMainContent.BackColor = Color.FromArgb(222, 222, 222);
+            pnlMainContent.Controls.Add(pnlOrdersView);
+            pnlMainContent.Dock = DockStyle.Fill;
+            pnlMainContent.Location = new Point(0, 0);
+            pnlMainContent.Margin = new Padding(0);
+            pnlMainContent.Name = "pnlMainContent";
+            pnlMainContent.Size = new Size(1050, 726);
+            pnlMainContent.TabIndex = 3;
+            // 
+            // pnlOrdersView
+            // 
+            pnlOrdersView.ColumnCount = 2;
+            pnlOrdersView.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            pnlOrdersView.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 375F));
+            pnlOrdersView.Controls.Add(pnlGridArea, 0, 0);
+            pnlOrdersView.Controls.Add(pnlDetail, 1, 0);
+            pnlOrdersView.Dock = DockStyle.Fill;
+            pnlOrdersView.Location = new Point(0, 0);
+            pnlOrdersView.Name = "pnlOrdersView";
+            pnlOrdersView.RowCount = 1;
+            pnlOrdersView.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            pnlOrdersView.Size = new Size(1050, 726);
+            pnlOrdersView.TabIndex = 0;
             // 
             // pnlGridArea
             // 
@@ -294,35 +325,59 @@ namespace RepairFlow.UI.Forms
             pnlGridArea.Controls.Add(pnlPagination);
             pnlGridArea.Controls.Add(dgvOrders);
             pnlGridArea.Dock = DockStyle.Fill;
-            pnlGridArea.Location = new Point(375, 0);
-            pnlGridArea.Margin = new Padding(0);
+            pnlGridArea.Location = new Point(378, 3);
             pnlGridArea.Name = "pnlGridArea";
-            pnlGridArea.Padding = new Padding(6);
-            pnlGridArea.Size = new Size(705, 726);
+            pnlGridArea.Size = new Size(669, 720);
             pnlGridArea.TabIndex = 1;
             // 
             // pnlPagination
             // 
             pnlPagination.BackColor = Color.White;
             pnlPagination.Controls.Add(lblPagInfo);
+            pnlPagination.Controls.Add(btnNextPage);
+            pnlPagination.Controls.Add(btnPrevPage);
             pnlPagination.Dock = DockStyle.Bottom;
-            pnlPagination.Location = new Point(6, 692);
+            pnlPagination.Location = new Point(0, 692);
             pnlPagination.Name = "pnlPagination";
-            pnlPagination.Size = new Size(693, 28);
+            pnlPagination.Size = new Size(669, 28);
             pnlPagination.TabIndex = 1;
             // 
             // lblPagInfo
             // 
-            lblPagInfo.Dock = DockStyle.Fill;
+            lblPagInfo.Dock = DockStyle.Right;
             lblPagInfo.Font = new Font("Segoe UI", 8F);
-            lblPagInfo.ForeColor = Color.FromArgb(37, 134, 41);
-            lblPagInfo.Location = new Point(0, 0);
+            lblPagInfo.ForeColor = Color.FromArgb(120, 120, 120);
+            lblPagInfo.Location = new Point(419, 0);
             lblPagInfo.Name = "lblPagInfo";
             lblPagInfo.Padding = new Padding(0, 0, 8, 0);
-            lblPagInfo.Size = new Size(693, 28);
+            lblPagInfo.Size = new Size(250, 28);
             lblPagInfo.TabIndex = 0;
-            lblPagInfo.Text = "الموجود: 0";
+            lblPagInfo.Text = "صفحة 1 من 1  |  المجموع: 0";
             lblPagInfo.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // btnNextPage
+            // 
+            btnNextPage.Dock = DockStyle.Left;
+            btnNextPage.FlatStyle = FlatStyle.Flat;
+            btnNextPage.FlatAppearance.BorderSize = 0;
+            btnNextPage.IconChar = FontAwesome.Sharp.IconChar.ChevronLeft;
+            btnNextPage.IconColor = Color.FromArgb(44, 62, 107);
+            btnNextPage.IconSize = 16;
+            btnNextPage.Size = new Size(32, 28);
+            btnNextPage.Cursor = Cursors.Hand;
+            btnNextPage.Name = "btnNextPage";
+            // 
+            // btnPrevPage
+            // 
+            btnPrevPage.Dock = DockStyle.Left;
+            btnPrevPage.FlatStyle = FlatStyle.Flat;
+            btnPrevPage.FlatAppearance.BorderSize = 0;
+            btnPrevPage.IconChar = FontAwesome.Sharp.IconChar.ChevronRight;
+            btnPrevPage.IconColor = Color.FromArgb(44, 62, 107);
+            btnPrevPage.IconSize = 16;
+            btnPrevPage.Size = new Size(32, 28);
+            btnPrevPage.Cursor = Cursors.Hand;
+            btnPrevPage.Name = "btnPrevPage";
             // 
             // dgvOrders
             // 
@@ -359,16 +414,16 @@ namespace RepairFlow.UI.Forms
             dgvOrders.EnableHeadersVisualStyles = false;
             dgvOrders.Font = new Font("Segoe UI", 8.5F);
             dgvOrders.GridColor = Color.FromArgb(232, 232, 232);
-            dgvOrders.Location = new Point(6, 6);
+            dgvOrders.Location = new Point(0, 0);
             dgvOrders.MultiSelect = false;
             dgvOrders.Name = "dgvOrders";
             dgvOrders.ReadOnly = true;
             dgvOrders.RowHeadersVisible = false;
             dgvOrders.RowHeadersWidth = 62;
-            dgvOrders.RowTemplate.Height = 36;
+            dgvOrders.RowTemplate.Height = 32;
             dgvOrders.ScrollBars = ScrollBars.Vertical;
             dgvOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvOrders.Size = new Size(693, 714);
+            dgvOrders.Size = new Size(669, 720);
             dgvOrders.TabIndex = 0;
             // 
             // colReceipt
@@ -428,10 +483,9 @@ namespace RepairFlow.UI.Forms
             pnlDetail.Controls.Add(pnlDetailScroll);
             pnlDetail.Controls.Add(pnlDtlHeader);
             pnlDetail.Dock = DockStyle.Fill;
-            pnlDetail.Location = new Point(0, 0);
-            pnlDetail.Margin = new Padding(0);
+            pnlDetail.Location = new Point(3, 3);
             pnlDetail.Name = "pnlDetail";
-            pnlDetail.Size = new Size(375, 726);
+            pnlDetail.Size = new Size(369, 720);
             pnlDetail.TabIndex = 2;
             // 
             // pnlDetailScroll
@@ -469,7 +523,7 @@ namespace RepairFlow.UI.Forms
             pnlDetailScroll.Location = new Point(0, 42);
             pnlDetailScroll.Name = "pnlDetailScroll";
             pnlDetailScroll.Padding = new Padding(12, 8, 12, 12);
-            pnlDetailScroll.Size = new Size(375, 684);
+            pnlDetailScroll.Size = new Size(369, 678);
             pnlDetailScroll.TabIndex = 0;
             // 
             // cap1
@@ -652,7 +706,7 @@ namespace RepairFlow.UI.Forms
             // 
             lblSectionParts.Font = new Font("Segoe UI", 7.5F);
             lblSectionParts.ForeColor = Color.FromArgb(136, 136, 136);
-            lblSectionParts.Location = new Point(12, 260);
+            lblSectionParts.Location = new Point(12, 380);
             lblSectionParts.Name = "lblSectionParts";
             lblSectionParts.Size = new Size(347, 31);
             lblSectionParts.TabIndex = 15;
@@ -664,7 +718,7 @@ namespace RepairFlow.UI.Forms
             pnlParts.BackColor = Color.White;
             pnlParts.Controls.Add(dgvParts);
             pnlParts.Controls.Add(pnlPartsFooter);
-            pnlParts.Location = new Point(12, 284);
+            pnlParts.Location = new Point(12, 404);
             pnlParts.Name = "pnlParts";
             pnlParts.Size = new Size(347, 192);
             pnlParts.TabIndex = 16;
@@ -835,7 +889,7 @@ namespace RepairFlow.UI.Forms
             // 
             lblSectionDates.Font = new Font("Segoe UI", 7.5F);
             lblSectionDates.ForeColor = Color.FromArgb(136, 136, 136);
-            lblSectionDates.Location = new Point(12, 486);
+            lblSectionDates.Location = new Point(12, 260);
             lblSectionDates.Name = "lblSectionDates";
             lblSectionDates.Size = new Size(347, 18);
             lblSectionDates.TabIndex = 17;
@@ -847,7 +901,7 @@ namespace RepairFlow.UI.Forms
             pnlDates.BackColor = Color.FromArgb(248, 248, 248);
             pnlDates.Controls.Add(boxIn);
             pnlDates.Controls.Add(boxOut);
-            pnlDates.Location = new Point(12, 506);
+            pnlDates.Location = new Point(12, 280);
             pnlDates.Name = "pnlDates";
             pnlDates.Size = new Size(347, 92);
             pnlDates.TabIndex = 18;
@@ -953,9 +1007,9 @@ namespace RepairFlow.UI.Forms
             pnlWarranty.BackColor = Color.White;
             pnlWarranty.Controls.Add(capWarranty);
             pnlWarranty.Controls.Add(valWarranty);
-            pnlWarranty.Location = new Point(12, 680);
+            pnlWarranty.Location = new Point(12, 672);
             pnlWarranty.Name = "pnlWarranty";
-            pnlWarranty.Size = new Size(347, 46);
+            pnlWarranty.Size = new Size(347, 62);
             pnlWarranty.TabIndex = 20;
             pnlWarranty.Visible = false;
             // 
@@ -965,7 +1019,7 @@ namespace RepairFlow.UI.Forms
             capWarranty.ForeColor = Color.FromArgb(136, 136, 136);
             capWarranty.Location = new Point(5, 5);
             capWarranty.Name = "capWarranty";
-            capWarranty.Size = new Size(337, 18);
+            capWarranty.Size = new Size(336, 27);
             capWarranty.TabIndex = 0;
             capWarranty.Text = "الضمان";
             capWarranty.TextAlign = ContentAlignment.TopRight;
@@ -974,9 +1028,9 @@ namespace RepairFlow.UI.Forms
             // 
             valWarranty.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             valWarranty.ForeColor = Color.FromArgb(37, 134, 41);
-            valWarranty.Location = new Point(5, 24);
+            valWarranty.Location = new Point(5, 32);
             valWarranty.Name = "valWarranty";
-            valWarranty.Size = new Size(337, 18);
+            valWarranty.Size = new Size(342, 33);
             valWarranty.TabIndex = 1;
             valWarranty.Text = "—";
             valWarranty.TextAlign = ContentAlignment.TopRight;
@@ -1085,7 +1139,7 @@ namespace RepairFlow.UI.Forms
             pnlDtlHeader.Dock = DockStyle.Top;
             pnlDtlHeader.Location = new Point(0, 0);
             pnlDtlHeader.Name = "pnlDtlHeader";
-            pnlDtlHeader.Size = new Size(375, 42);
+            pnlDtlHeader.Size = new Size(369, 42);
             pnlDtlHeader.TabIndex = 1;
             // 
             // lblDtlTitle
@@ -1096,7 +1150,7 @@ namespace RepairFlow.UI.Forms
             lblDtlTitle.Location = new Point(0, 0);
             lblDtlTitle.Name = "lblDtlTitle";
             lblDtlTitle.Padding = new Padding(0, 0, 10, 0);
-            lblDtlTitle.Size = new Size(375, 42);
+            lblDtlTitle.Size = new Size(369, 42);
             lblDtlTitle.TabIndex = 2;
             lblDtlTitle.Text = "تفاصيل الإيصال";
             lblDtlTitle.TextAlign = ContentAlignment.MiddleRight;
@@ -1151,6 +1205,9 @@ namespace RepairFlow.UI.Forms
             pnlSearch.PerformLayout();
             tblMain.ResumeLayout(false);
             pnlSidebar.ResumeLayout(false);
+            flpFilters.ResumeLayout(false);
+            pnlMainContent.ResumeLayout(false);
+            pnlOrdersView.ResumeLayout(false);
             pnlGridArea.ResumeLayout(false);
             pnlPagination.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvOrders).EndInit();
@@ -1186,11 +1243,15 @@ namespace RepairFlow.UI.Forms
         private Label            lblLogo;
         private Label            lblLogoIcon;
         private TableLayoutPanel tblMain;
+        private Panel            pnlMainContent;
+        private TableLayoutPanel pnlOrdersView;
         private Panel            pnlSidebar;
         private FlowLayoutPanel  flpFilters;
         private Panel            pnlGridArea;
         private Panel            pnlPagination;
         private Label            lblPagInfo;
+        private FontAwesome.Sharp.IconButton btnPrevPage;
+        private FontAwesome.Sharp.IconButton btnNextPage;
         private DataGridView     dgvOrders;
         private DataGridViewTextBoxColumn colReceipt, colClient, colDevice;
         private DataGridViewTextBoxColumn colPhone, colDate, colStatus;
