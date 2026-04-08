@@ -136,11 +136,11 @@ namespace RepairFlow.UI.Forms
             AddSidebarLabel("الحالات", 8.5f, Color.FromArgb(150, 150, 150),
                             new Padding(0, 10, 0, 6), 192, 20);
 
-            AddFilter("≡",  "الكل",        navy,        CountStatus(""), true);
-            AddFilter("📥", "وارد جديد",   FgNew,       CountStatus("وارد جديد"),   false);
-            AddFilter("🔍", "قيد الفحص",   FgInspect,   CountStatus("قيد الفحص"),   false);
-            AddFilter("🔧", "تحت الإصلاح", FgRepair,    CountStatus("تحت الإصلاح"), false);
-            AddFilter("✓",  "جاهز",        FgReady,     CountStatus("جاهز"),         false);
+            AddFilter("≡",  "الكل",        navy, CountStatus(""), true);
+            AddFilter("📥", "وارد جديد",   FgNew, CountStatus("وارد جديد"),   false);
+            AddFilter("🔍", "قيد الفحص",   FgInspect, CountStatus("قيد الفحص"),   false);
+            AddFilter("🔧", "تحت الإصلاح", FgRepair, CountStatus("تحت الإصلاح"), false);
+            AddFilter("✓",  "جاهز",        FgReady, CountStatus("جاهز"),         false);
             AddFilter("🚚", "تم التسليم",  FgDelivered, CountStatus("تم التسليم"),   false);
 
             AddSeparator(16, 10);
@@ -155,17 +155,11 @@ namespace RepairFlow.UI.Forms
 
             var btnInventory = MakeSidebarBtn("📦  فتح المخزون", Color.FromArgb(44, 62, 107), Color.White);
             btnInventory.Margin = new Padding(4, 0, 4, 4);
-            btnInventory.Click += (s, e) =>
-                MessageBox.Show("سيتم فتح صفحة إدارة المخزون.", "المخزون",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             flpFilters.Controls.Add(btnInventory);
 
            
             var btnDash = MakeSidebarBtn("📊  Dashboard", Color.FromArgb(52, 73, 94), Color.White);
             btnDash.Margin = new Padding(4, 0, 4, 6);
-            btnDash.Click += (s, e) =>
-                MessageBox.Show("سيتم فتح لوحة التحكم الرئيسية.", "Dashboard",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             flpFilters.Controls.Add(btnDash);
 
             AddSeparator(10, 10);
@@ -291,8 +285,8 @@ namespace RepairFlow.UI.Forms
             if (active) { _activeFilterPanel = pnl; _activeFilterBtn = btn; }
 
             string f = label;
-            btn.Click   += (s, e) => ApplyFilter(f, pnl, btn);
-            pnl.Click   += (s, e) => ApplyFilter(f, pnl, btn);
+            btn.Click += (s, e) => ApplyFilter(f, pnl, btn);
+            pnl.Click += (s, e) => ApplyFilter(f, pnl, btn);
             badge.Click += (s, e) => ApplyFilter(f, pnl, btn);
 
             flpFilters.Controls.Add(pnl);
