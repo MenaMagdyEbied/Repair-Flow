@@ -1177,7 +1177,7 @@ namespace RepairFlow.UI.Forms
 
         #endregion
 
-        // ─── field declarations ────────────────────────────────────────────
+        // ─── field declarations 
         private Panel            pnlTitleBar;
         private Label            lblTitle;
         private Panel            pnlDots;
