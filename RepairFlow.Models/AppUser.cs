@@ -2,7 +2,7 @@ namespace RepairFlow.Models
 {
     public class AppUser
     {
-        public bool IsActive;
+        public bool IsActive { get; set; } = true;
 
         public int Id { get; set; }
         public string FirstName { get; set; } = string.Empty;   
