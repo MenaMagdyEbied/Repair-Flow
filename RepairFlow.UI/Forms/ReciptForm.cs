@@ -1,10 +1,19 @@
+using RepairFlow.BLL;
+using RepairFlow.DAL;
+using RepairFlow.DAL.Repositories;
+
 namespace RepairFlow.UI.Forms
 {
     public partial class ReciptForm : Form
     {
-        public ReciptForm()
+        private readonly MainForm _mainForm;
+        private readonly string _receiptNumber;
+
+        public ReciptForm(MainForm mainForm, string receiptNumber)
         {
             InitializeComponent();
+            _mainForm = mainForm;
+            _receiptNumber = receiptNumber;
         }
 
         // ── Button Events ─────────────────────────────────────────────────────
@@ -23,81 +32,49 @@ namespace RepairFlow.UI.Forms
         {
             string customerName = txtCustomerName.Text;
             string phone = txtPhone.Text;
-            string placeholder1 = (string)txtCustomerName.Tag;
-            string placeholder2 = (string)txtPhone.Tag;
-
-            // 1. اسم العميل validation
-            if (customerName == placeholder1 || string.IsNullOrWhiteSpace(customerName))
-            {
-                MessageBox.Show("يرجى إدخال اسم العميل.", "تنبيه",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Validation for customer name: must have first and last name with space
-            string[] nameParts = customerName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (nameParts.Length != 2 || string.IsNullOrWhiteSpace(nameParts[0]) || string.IsNullOrWhiteSpace(nameParts[1]))
-            {
-                MessageBox.Show("اسم العميل يجب أن يحتوي على الاسم الأول والأخير مفصولين بمسافة .", "تنبيه",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // 2. رقم الهاتف validation
-            if (phone == placeholder2 || string.IsNullOrWhiteSpace(phone))
-            {
-                MessageBox.Show("يرجى إدخال رقم الهاتف.", "تنبيه",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Validation for phone number: must start with 01, 11 digits, no characters
-            if (!phone.StartsWith("01") || phone.Length != 11 || !phone.All(char.IsDigit))
-            {
-                MessageBox.Show("رقم الهاتف يجب ان يحتوي علي 11 رقم فقط ولا يحتوي علي اي رموز او احرف ", "تنبيه",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // 3. الجهاز validation
-            if (cboBrand.SelectedItem == null || cboBrand.SelectedIndex == -1)
-            {
-                MessageBox.Show("يجب ان تختار", "تنبيه",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // 4. الموديل validation
-            string placeholder3 = (string)txtModel.Tag;
-            if (txtModel.Text == placeholder3 || string.IsNullOrWhiteSpace(txtModel.Text))
-            {
-                MessageBox.Show("تنبيه يجب كتابه اسم الموديل", "تنبيه",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // 5. وصف العطل validation
-            string faultPlaceholder = (string)rtbFaultDesc.Tag;
-            if (rtbFaultDesc.Text == faultPlaceholder || string.IsNullOrWhiteSpace(rtbFaultDesc.Text))
-            {
-                MessageBox.Show("يجب كتابه ما هو العطل", "تنبيه",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string brand = cboBrand.SelectedItem != null ? cboBrand.SelectedItem.ToString() : "";
+            string brand = cboBrand.SelectedItem != null ? cboBrand.SelectedItem.ToString()! : "";
             string model = txtModel.Text == (string)txtModel.Tag ? "" : txtModel.Text;
-            string date = dtpReceiveDate.Value.ToShortDateString();
+            string fault = rtbFaultDesc.Text == (string)rtbFaultDesc.Tag ? "" : rtbFaultDesc.Text;
+            string acc = rtbAccessories.Text == (string)rtbAccessories.Tag ? "" : rtbAccessories.Text;
 
-            MessageBox.Show(
-                "تم حفظ الإيصال بنجاح!\n\n" +
-                "العميل: " + customerName + "\n" +
-                "الهاتف: " + phone + "\n" +
-                "الجهاز: " + brand + " - " + model + "\n" +
-                "تاريخ الاستلام: " + date,
-                "تم الحفظ",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            // Expected cost (optional)
+            string costPlaceholder = txtExpectedCost.Tag as string ?? "";
+            string costText = txtExpectedCost.Text == costPlaceholder ? "" : txtExpectedCost.Text;
+            decimal? repairCost = null;
+            if (!string.IsNullOrWhiteSpace(costText) && decimal.TryParse(costText, out decimal parsedCost))
+                repairCost = parsedCost;
+
+            string warrantyText = cboWarranty.Text;
+            string statusText = cboInitialStatus.Text;
+            DateTime receivedAt = dtpReceiveDate.Value;
+
+            try
+            {
+                using var context = new AppDbContext();
+                var deviceService = new DeviceService(new DeviceRepository(context));
+
+                var device = deviceService.AddDevice(_receiptNumber, customerName.Trim(), phone, brand, model, fault, acc, repairCost, warrantyText, statusText, receivedAt);
+
+                _mainForm.AddNewDevice(device);
+
+                string date = dtpReceiveDate.Value.ToString("yyyy/MM/dd");
+                MessageBox.Show(
+                    "تم حفظ الإيصال بنجاح وإضافته للقائمة!\n\n" +
+                    "رقم الإيصال: " + _receiptNumber + "\n" +
+                    "العميل: " + customerName + "\n" +
+                    "الهاتف: " + phone + "\n" +
+                    "الجهاز: " + brand + " - " + model + "\n" +
+                    "تاريخ الاستلام: " + date,
+                    "تم الحفظ",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                this.Close();
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show(ex.Message, "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         // ── TextBox Placeholder Events ────────────────────────────────────────
