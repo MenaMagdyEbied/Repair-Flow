@@ -15,7 +15,6 @@ namespace RepairFlow.UI
             DbInitializer.Seed(context);
 
             Application.Run(new Forms.MainForm());
-            //Application.Run(new Forms.ReciptForm());
         }
     }
 }

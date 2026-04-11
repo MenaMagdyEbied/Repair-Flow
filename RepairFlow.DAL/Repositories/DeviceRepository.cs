@@ -1,25 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using RepairFlow.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace RepairFlow.DAL.Repositories
 {
+    public class DeviceRepository : BaseRepository<Device>, IDeviceRepository
     {
+        public DeviceRepository(AppDbContext context) : base(context)
         {
-            // Find existing customer or create new one
-            var customer = _context.Customers
-                .FirstOrDefault(c => c.Name == customerName.Trim() && c.Phone == phone);
-
-            if (customer == null)
-            {
-                customer = new Customer
-                {
-                    Name = customerName.Trim(),
-                    Phone = phone
-                };
-                _context.Customers.Add(customer);
         }
 
+        public List<Device> GetAllWithCustomer()
         {
             return _context.Devices
                 .Include(d => d.Customer)
@@ -29,9 +19,18 @@ namespace RepairFlow.DAL.Repositories
                 .ToList();
         }
 
+        public Device? GetByReceipt(string receiptNumber)
         {
+            return _context.Devices
+                .Include(d => d.Customer)
+                .Include(d => d.DeviceSpareParts)
+                    .ThenInclude(dsp => dsp.SparePart)
+                .FirstOrDefault(d => d.ReceiptNumber == receiptNumber);
+        }
 
+        public int CountByStatus(RepairStatus status)
         {
+            return _context.Devices.Count(d => d.Status == status);
         }
 
         public int CountAll()
@@ -39,6 +38,12 @@ namespace RepairFlow.DAL.Repositories
             return _context.Devices.Count();
         }
 
+        public string? GetLastReceiptNumber()
+        {
+            return _context.Devices
+                .OrderByDescending(d => d.Id)
+                .Select(d => d.ReceiptNumber)
+                .FirstOrDefault();
         }
     }
 }
