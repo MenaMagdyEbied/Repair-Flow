@@ -107,6 +107,10 @@ namespace RepairFlow.UI.Forms
             pnlSearch.SuspendLayout();
             tblMain.SuspendLayout();
             pnlSidebar.SuspendLayout();
+<<<<<<< HEAD
+=======
+            flpFilters.SuspendLayout();
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             pnlMainContent.SuspendLayout();
             pnlOrdersView.SuspendLayout();
             pnlGridArea.SuspendLayout();
@@ -276,7 +280,11 @@ namespace RepairFlow.UI.Forms
             pnlSidebar.Margin = new Padding(0);
             pnlSidebar.Name = "pnlSidebar";
             pnlSidebar.Padding = new Padding(0, 8, 0, 8);
+<<<<<<< HEAD
             pnlSidebar.Size = new Size(230, 675);
+=======
+            pnlSidebar.Size = new Size(230, 726);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             pnlSidebar.TabIndex = 0;
             // 
             // flpFilters
@@ -288,7 +296,11 @@ namespace RepairFlow.UI.Forms
             flpFilters.Location = new Point(0, 8);
             flpFilters.Name = "flpFilters";
             flpFilters.Padding = new Padding(4, 0, 4, 0);
+<<<<<<< HEAD
             flpFilters.Size = new Size(230, 659);
+=======
+            flpFilters.Size = new Size(230, 710);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             flpFilters.TabIndex = 0;
             flpFilters.WrapContents = false;
             // 
@@ -300,7 +312,11 @@ namespace RepairFlow.UI.Forms
             pnlMainContent.Location = new Point(0, 0);
             pnlMainContent.Margin = new Padding(0);
             pnlMainContent.Name = "pnlMainContent";
+<<<<<<< HEAD
             pnlMainContent.Size = new Size(1050, 675);
+=======
+            pnlMainContent.Size = new Size(1050, 726);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             pnlMainContent.TabIndex = 3;
             // 
             // pnlOrdersView
@@ -315,7 +331,11 @@ namespace RepairFlow.UI.Forms
             pnlOrdersView.Name = "pnlOrdersView";
             pnlOrdersView.RowCount = 1;
             pnlOrdersView.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+<<<<<<< HEAD
             pnlOrdersView.Size = new Size(1050, 675);
+=======
+            pnlOrdersView.Size = new Size(1050, 726);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             pnlOrdersView.TabIndex = 0;
             // 
             // pnlGridArea
@@ -326,7 +346,11 @@ namespace RepairFlow.UI.Forms
             pnlGridArea.Dock = DockStyle.Fill;
             pnlGridArea.Location = new Point(378, 3);
             pnlGridArea.Name = "pnlGridArea";
+<<<<<<< HEAD
             pnlGridArea.Size = new Size(669, 669);
+=======
+            pnlGridArea.Size = new Size(669, 720);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             pnlGridArea.TabIndex = 1;
             // 
             // pnlPagination
@@ -336,7 +360,11 @@ namespace RepairFlow.UI.Forms
             pnlPagination.Controls.Add(btnNextPage);
             pnlPagination.Controls.Add(btnPrevPage);
             pnlPagination.Dock = DockStyle.Bottom;
+<<<<<<< HEAD
             pnlPagination.Location = new Point(0, 641);
+=======
+            pnlPagination.Location = new Point(0, 692);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             pnlPagination.Name = "pnlPagination";
             pnlPagination.Size = new Size(669, 28);
             pnlPagination.TabIndex = 1;
@@ -356,6 +384,7 @@ namespace RepairFlow.UI.Forms
             // 
             // btnNextPage
             // 
+<<<<<<< HEAD
             btnNextPage.Cursor = Cursors.Hand;
             btnNextPage.Dock = DockStyle.Left;
             btnNextPage.FlatAppearance.BorderSize = 0;
@@ -383,6 +412,29 @@ namespace RepairFlow.UI.Forms
             btnPrevPage.Name = "btnPrevPage";
             btnPrevPage.Size = new Size(32, 28);
             btnPrevPage.TabIndex = 2;
+=======
+            btnNextPage.Dock = DockStyle.Left;
+            btnNextPage.FlatStyle = FlatStyle.Flat;
+            btnNextPage.FlatAppearance.BorderSize = 0;
+            btnNextPage.IconChar = FontAwesome.Sharp.IconChar.ChevronLeft;
+            btnNextPage.IconColor = Color.FromArgb(44, 62, 107);
+            btnNextPage.IconSize = 16;
+            btnNextPage.Size = new Size(32, 28);
+            btnNextPage.Cursor = Cursors.Hand;
+            btnNextPage.Name = "btnNextPage";
+            // 
+            // btnPrevPage
+            // 
+            btnPrevPage.Dock = DockStyle.Left;
+            btnPrevPage.FlatStyle = FlatStyle.Flat;
+            btnPrevPage.FlatAppearance.BorderSize = 0;
+            btnPrevPage.IconChar = FontAwesome.Sharp.IconChar.ChevronRight;
+            btnPrevPage.IconColor = Color.FromArgb(44, 62, 107);
+            btnPrevPage.IconSize = 16;
+            btnPrevPage.Size = new Size(32, 28);
+            btnPrevPage.Cursor = Cursors.Hand;
+            btnPrevPage.Name = "btnPrevPage";
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             // 
             // dgvOrders
             // 
@@ -428,7 +480,11 @@ namespace RepairFlow.UI.Forms
             dgvOrders.RowTemplate.Height = 32;
             dgvOrders.ScrollBars = ScrollBars.Vertical;
             dgvOrders.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+<<<<<<< HEAD
             dgvOrders.Size = new Size(669, 669);
+=======
+            dgvOrders.Size = new Size(669, 720);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             dgvOrders.TabIndex = 0;
             // 
             // colReceipt
@@ -490,7 +546,11 @@ namespace RepairFlow.UI.Forms
             pnlDetail.Dock = DockStyle.Fill;
             pnlDetail.Location = new Point(3, 3);
             pnlDetail.Name = "pnlDetail";
+<<<<<<< HEAD
             pnlDetail.Size = new Size(369, 669);
+=======
+            pnlDetail.Size = new Size(369, 720);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             pnlDetail.TabIndex = 2;
             // 
             // pnlDetailScroll
@@ -528,7 +588,11 @@ namespace RepairFlow.UI.Forms
             pnlDetailScroll.Location = new Point(0, 42);
             pnlDetailScroll.Name = "pnlDetailScroll";
             pnlDetailScroll.Padding = new Padding(12, 8, 12, 12);
+<<<<<<< HEAD
             pnlDetailScroll.Size = new Size(369, 627);
+=======
+            pnlDetailScroll.Size = new Size(369, 678);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             pnlDetailScroll.TabIndex = 0;
             // 
             // cap1
@@ -1210,6 +1274,10 @@ namespace RepairFlow.UI.Forms
             pnlSearch.PerformLayout();
             tblMain.ResumeLayout(false);
             pnlSidebar.ResumeLayout(false);
+<<<<<<< HEAD
+=======
+            flpFilters.ResumeLayout(false);
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
             pnlMainContent.ResumeLayout(false);
             pnlOrdersView.ResumeLayout(false);
             pnlGridArea.ResumeLayout(false);

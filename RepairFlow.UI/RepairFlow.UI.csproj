@@ -8,7 +8,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
+<<<<<<< HEAD
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WinForms" Version="2.0.0" />
+=======
+>>>>>>> f6cee4699ae7a471827616e7f080bd7a024c7fcb
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
