@@ -35,11 +35,16 @@ namespace RepairFlow.BLL.Services
             var oldStatus = device.Status;
 
             if (newStatus == RepairStatus.Delivered && oldStatus != RepairStatus.Delivered)
+            {
                 device.DeliveredAt = DateTime.Now;
+            }
             else if (newStatus != RepairStatus.Delivered)
+            {
                 device.DeliveredAt = null;
+            }
 
             device.Status = newStatus;
+
             device.StatusHistories.Add(new StatusHistory
             {
                 DeviceId = device.Id,
@@ -123,15 +128,15 @@ namespace RepairFlow.BLL.Services
 
             var device = new Device
             {
-                ReceiptNumber = receiptNumber,
-                CustomerId    = customer.Id,
-                DeviceName    = deviceName,
-                Model         = model,
-                Fault         = fault,
-                Accessories   = accessories,
-                RepairCost    = repairCost,
-                Status        = status,
-                ReceivedAt    = receivedAt,
+                ReceiptNumber  = receiptNumber,
+                CustomerId     = customer.Id,
+                DeviceName     = deviceName,
+                Model          = model,
+                Fault          = fault,
+                Accessories    = accessories,
+                RepairCost     = repairCost,
+                Status         = status,
+                ReceivedAt     = receivedAt,
                 WarrantyMonths = warrantyMonths
             };
 
@@ -159,7 +164,9 @@ namespace RepairFlow.BLL.Services
             {
                 var parts = lastReceipt.Split('-');
                 if (parts.Length == 3 && int.TryParse(parts[2], out int lastNum))
+                {
                     nextNumber = lastNum + 1;
+                }
             }
 
             return $"{prefix}{nextNumber:D3}";
@@ -168,7 +175,10 @@ namespace RepairFlow.BLL.Services
         public void DeleteDevice(int deviceId)
         {
             var device = _deviceRepo.GetAllWithCustomer().FirstOrDefault(d => d.Id == deviceId);
-            if (device != null) _deviceRepo.Delete(device);
+            if (device != null)
+            {
+                _deviceRepo.Delete(device);
+            }
         }
 
         public void AddSparePart(string receiptNumber, string partName, int quantity, decimal price)
@@ -181,8 +191,8 @@ namespace RepairFlow.BLL.Services
 
             device.DeviceSpareParts.Add(new DeviceSparePart
             {
-                DeviceId    = device.Id,
-                SparePartId = part.Id,
+                DeviceId     = device.Id,
+                SparePartId  = part.Id,
                 QuantityUsed = quantity,
                 UnitPrice    = price
             });
@@ -203,6 +213,7 @@ namespace RepairFlow.BLL.Services
                 device.RepairCost = device.DeviceSpareParts.Count > 0
                     ? device.DeviceSpareParts.Sum(p => p.QuantityUsed * p.UnitPrice)
                     : null;
+
                 _deviceRepo.Update(device);
             }
         }
@@ -238,9 +249,9 @@ namespace RepairFlow.BLL.Services
 
         private static void ValidateDevice(string brand, string model, string fault)
         {
-            if (string.IsNullOrWhiteSpace(brand))  throw new ArgumentException("يجب أن تختار نوع الجهاز.");
-            if (string.IsNullOrWhiteSpace(model))  throw new ArgumentException("يجب كتابة اسم الموديل.");
-            if (string.IsNullOrWhiteSpace(fault))  throw new ArgumentException("يجب كتابة ما هو العطل.");
+            if (string.IsNullOrWhiteSpace(brand)) throw new ArgumentException("يجب أن تختار نوع الجهاز.");
+            if (string.IsNullOrWhiteSpace(model)) throw new ArgumentException("يجب كتابة اسم الموديل.");
+            if (string.IsNullOrWhiteSpace(fault)) throw new ArgumentException("يجب كتابة ما هو العطل.");
         }
 
         private static int ParseWarrantyMonths(string text) => text switch
@@ -253,14 +264,14 @@ namespace RepairFlow.BLL.Services
 
         private static RepairStatus ParseStatus(string label) => label switch
         {
-            "وارد جديد"        => RepairStatus.NewArrival,
-            "قيد الفحص"       => RepairStatus.UnderInspection,
-            "قيد الإصلاح"     => RepairStatus.UnderRepair,
-            "تحت الإصلاح"     => RepairStatus.UnderRepair,
-            "جاهز"             => RepairStatus.Ready,
-            "جاهز للتسليم"    => RepairStatus.Ready,
-            "تم التسليم"      => RepairStatus.Delivered,
-            _                  => RepairStatus.NewArrival
+            "وارد جديد"     => RepairStatus.NewArrival,
+            "قيد الفحص"    => RepairStatus.UnderInspection,
+            "قيد الإصلاح"  => RepairStatus.UnderRepair,
+            "تحت الإصلاح"  => RepairStatus.UnderRepair,
+            "جاهز"          => RepairStatus.Ready,
+            "جاهز للتسليم" => RepairStatus.Ready,
+            "تم التسليم"   => RepairStatus.Delivered,
+            _               => RepairStatus.NewArrival
         };
     }
 }
