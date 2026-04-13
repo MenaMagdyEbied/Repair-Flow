@@ -24,6 +24,7 @@ namespace RepairFlow.UI.Forms
 
         private Panel?  _activeFilterPanel;
         private Button? _activeFilterBtn;
+        private Button? _btnLogin;
 
         private Control? _currentView;
 
@@ -49,19 +50,23 @@ namespace RepairFlow.UI.Forms
         private readonly IBackupService    _backupService;
         private readonly ISparePartService _partService;
         private readonly IDashboardService _dashboardService;
+        // current user is displayed in the sidebar button; username set via SetLoggedInUser
 
         private List<Device>    _devices     = new();
         private List<SparePart> _dbInventory = new();
         private decimal _selectedPartUnitPrice;
 
         // ── Constructor (Full DI — used by Program.cs) ────────────────────────
+        private readonly Form _loginForm;
+
         public MainForm(
             IDeviceService    deviceService,
             ISparePartService partService,
             IDashboardService dashboardService,
             IWhatsAppService  waService,
             IPrintService     printService,
-            IBackupService    backupService)
+            IBackupService    backupService,
+            Form     loginForm)
         {
             InitializeComponent();
 
@@ -71,6 +76,7 @@ namespace RepairFlow.UI.Forms
             _waService        = waService;
             _printService     = printService;
             _backupService    = backupService;
+            _loginForm        = loginForm;
 
             _currentView = pnlOrdersView;
             BuildSidebar();
@@ -107,7 +113,7 @@ namespace RepairFlow.UI.Forms
         // ── SIDEBAR ───────────────────────────────────────────────────────────
         private void BuildSidebar()
         {
-            Color navy   = Color.FromArgb(44, 62, 107);
+            Color navy = Color.FromArgb(44, 62, 107);
             Color sideBg = Color.FromArgb(248, 248, 248);
 
             var counts = _deviceService.GetStatusCounts();
@@ -115,12 +121,12 @@ namespace RepairFlow.UI.Forms
             AddSidebarLabel("الحالات", 8.5f, Color.FromArgb(150, 150, 150),
                             new Padding(0, 10, 0, 6), 222, 20);
 
-            AddFilter(IconChar.Bars,             "الكل",        navy,        counts.GetValueOrDefault("الكل",          "0"), true);
-            AddFilter(IconChar.Download,         "وارد جديد",   FgNew,       counts.GetValueOrDefault("وارد جديد",      "0"), false);
-            AddFilter(IconChar.MagnifyingGlass,  "قيد الفحص",   FgInspect,   counts.GetValueOrDefault("قيد الفحص",      "0"), false);
-            AddFilter(IconChar.Wrench,           "تحت الإصلاح", FgRepair,    counts.GetValueOrDefault("تحت الإصلاح",    "0"), false);
-            AddFilter(IconChar.Check,            "جاهز",        FgReady,     counts.GetValueOrDefault("جاهز",            "0"), false);
-            AddFilter(IconChar.Truck,            "تم التسليم",  FgDelivered, counts.GetValueOrDefault("تم التسليم",      "0"), false);
+            AddFilter(IconChar.Bars, "الكل", navy, counts.GetValueOrDefault("الكل", "0"), true);
+            AddFilter(IconChar.Download, "وارد جديد", FgNew, counts.GetValueOrDefault("وارد جديد", "0"), false);
+            AddFilter(IconChar.MagnifyingGlass, "قيد الفحص", FgInspect, counts.GetValueOrDefault("قيد الفحص", "0"), false);
+            AddFilter(IconChar.Wrench, "تحت الإصلاح", FgRepair, counts.GetValueOrDefault("تحت الإصلاح", "0"), false);
+            AddFilter(IconChar.Check, "جاهز", FgReady, counts.GetValueOrDefault("جاهز", "0"), false);
+            AddFilter(IconChar.Truck, "تم التسليم", FgDelivered, counts.GetValueOrDefault("تم التسليم", "0"), false);
 
             AddSeparator(16, 10);
 
@@ -157,12 +163,12 @@ namespace RepairFlow.UI.Forms
 
             _lblSavePath = new Label
             {
-                Text         = _receiptSavePath,
-                Font         = new Font("Segoe UI", 7.5f),
-                ForeColor    = Color.FromArgb(80, 80, 80),
-                Size         = new Size(214, 18),
-                Margin       = new Padding(4, 0, 4, 4),
-                TextAlign    = ContentAlignment.MiddleRight,
+                Text = _receiptSavePath,
+                Font = new Font("Segoe UI", 7.5f),
+                ForeColor = Color.FromArgb(80, 80, 80),
+                Size = new Size(214, 18),
+                Margin = new Padding(4, 0, 4, 4),
+                TextAlign = ContentAlignment.MiddleRight,
                 AutoEllipsis = true,
             };
             flpFilters.Controls.Add(_lblSavePath);
@@ -177,10 +183,23 @@ namespace RepairFlow.UI.Forms
 
             AddSeparator(16, 12);
 
-            var btnLogin = MakeSidebarBtn("  اسم المستخدم", Color.FromArgb(46, 204, 113), Color.White, icon: IconChar.SignInAlt);
-            flpFilters.Controls.Add(btnLogin);
+            // User display button (updated after successful login)
+            _btnLogin = MakeSidebarBtn("  اسم المستخدم", Color.FromArgb(46, 204, 113), Color.White, icon: IconChar.SignInAlt);
+            _btnLogin.Text = "  اسم المستخدم";
+            flpFilters.Controls.Add(_btnLogin);
 
+            // Logout button — show the original login form and close this main form
             var btnLogout = MakeSidebarBtn("  تسجيل الخروج", Color.FromArgb(231, 76, 60), Color.White, icon: IconChar.SignOutAlt);
+            btnLogout.Click += (s, e) =>
+            {
+                try
+                {
+                    _loginForm?.Show();
+                    _loginForm?.BringToFront();
+                }
+                catch { }
+                Close();
+            };
             flpFilters.Controls.Add(btnLogout);
         }
 
@@ -924,6 +943,15 @@ namespace RepairFlow.UI.Forms
             _dbInventory = _partService.GetInventory();
             foreach (var item in _dbInventory)
                 cmbPartSearch.Items.Add(item.Name);
+        }
+
+        // Set the logged-in username to display in the sidebar button
+        public void SetLoggedInUser(string username)
+        {
+            if (_btnLogin != null)
+            {
+                _btnLogin.Text = $"  {username}";
+            }
         }
     }
 }

@@ -107,7 +107,6 @@ namespace RepairFlow.UI.Forms
             pnlSearch.SuspendLayout();
             tblMain.SuspendLayout();
             pnlSidebar.SuspendLayout();
-            flpFilters.SuspendLayout();
             pnlMainContent.SuspendLayout();
             pnlOrdersView.SuspendLayout();
             pnlGridArea.SuspendLayout();
@@ -212,7 +211,7 @@ namespace RepairFlow.UI.Forms
             txtSearch.Location = new Point(24, 0);
             txtSearch.Name = "txtSearch";
             txtSearch.PlaceholderText = "بحث: رقم إيصال / هاتف / اسم";
-            txtSearch.Size = new Size(536, 24);
+            txtSearch.Size = new Size(536, 20);
             txtSearch.TabIndex = 0;
             // 
             // lblSearchIcon
@@ -247,7 +246,7 @@ namespace RepairFlow.UI.Forms
             lblLogo.ForeColor = Color.FromArgb(44, 62, 107);
             lblLogo.Location = new Point(915, 6);
             lblLogo.Name = "lblLogo";
-            lblLogo.Size = new Size(134, 30);
+            lblLogo.Size = new Size(116, 25);
             lblLogo.TabIndex = 2;
             lblLogo.Text = " Repair Flow";
             // 
@@ -357,27 +356,33 @@ namespace RepairFlow.UI.Forms
             // 
             // btnNextPage
             // 
+            btnNextPage.Cursor = Cursors.Hand;
             btnNextPage.Dock = DockStyle.Left;
-            btnNextPage.FlatStyle = FlatStyle.Flat;
             btnNextPage.FlatAppearance.BorderSize = 0;
+            btnNextPage.FlatStyle = FlatStyle.Flat;
             btnNextPage.IconChar = FontAwesome.Sharp.IconChar.ChevronLeft;
             btnNextPage.IconColor = Color.FromArgb(44, 62, 107);
+            btnNextPage.IconFont = FontAwesome.Sharp.IconFont.Auto;
             btnNextPage.IconSize = 16;
-            btnNextPage.Size = new Size(32, 28);
-            btnNextPage.Cursor = Cursors.Hand;
+            btnNextPage.Location = new Point(32, 0);
             btnNextPage.Name = "btnNextPage";
+            btnNextPage.Size = new Size(32, 28);
+            btnNextPage.TabIndex = 1;
             // 
             // btnPrevPage
             // 
+            btnPrevPage.Cursor = Cursors.Hand;
             btnPrevPage.Dock = DockStyle.Left;
-            btnPrevPage.FlatStyle = FlatStyle.Flat;
             btnPrevPage.FlatAppearance.BorderSize = 0;
+            btnPrevPage.FlatStyle = FlatStyle.Flat;
             btnPrevPage.IconChar = FontAwesome.Sharp.IconChar.ChevronRight;
             btnPrevPage.IconColor = Color.FromArgb(44, 62, 107);
+            btnPrevPage.IconFont = FontAwesome.Sharp.IconFont.Auto;
             btnPrevPage.IconSize = 16;
-            btnPrevPage.Size = new Size(32, 28);
-            btnPrevPage.Cursor = Cursors.Hand;
+            btnPrevPage.Location = new Point(0, 0);
             btnPrevPage.Name = "btnPrevPage";
+            btnPrevPage.Size = new Size(32, 28);
+            btnPrevPage.TabIndex = 2;
             // 
             // dgvOrders
             // 
@@ -433,7 +438,6 @@ namespace RepairFlow.UI.Forms
             colReceipt.MinimumWidth = 100;
             colReceipt.Name = "colReceipt";
             colReceipt.ReadOnly = true;
-            colReceipt.Width = 109;
             // 
             // colClient
             // 
@@ -442,7 +446,7 @@ namespace RepairFlow.UI.Forms
             colClient.MinimumWidth = 80;
             colClient.Name = "colClient";
             colClient.ReadOnly = true;
-            colClient.Width = 104;
+            colClient.Width = 91;
             // 
             // colDevice
             // 
@@ -459,7 +463,6 @@ namespace RepairFlow.UI.Forms
             colPhone.MinimumWidth = 100;
             colPhone.Name = "colPhone";
             colPhone.ReadOnly = true;
-            colPhone.Width = 103;
             // 
             // colDate
             // 
@@ -468,7 +471,7 @@ namespace RepairFlow.UI.Forms
             colDate.MinimumWidth = 80;
             colDate.Name = "colDate";
             colDate.ReadOnly = true;
-            colDate.Width = 111;
+            colDate.Width = 98;
             // 
             // colStatus
             // 
@@ -477,7 +480,7 @@ namespace RepairFlow.UI.Forms
             colStatus.MinimumWidth = 95;
             colStatus.Name = "colStatus";
             colStatus.ReadOnly = true;
-            colStatus.Width = 96;
+            colStatus.Width = 95;
             // 
             // pnlDetail
             // 
@@ -834,7 +837,7 @@ namespace RepairFlow.UI.Forms
             cmbPartSearch.Font = new Font("Segoe UI", 8F);
             cmbPartSearch.Location = new Point(116, 5);
             cmbPartSearch.Name = "cmbPartSearch";
-            cmbPartSearch.Size = new Size(225, 29);
+            cmbPartSearch.Size = new Size(225, 25);
             cmbPartSearch.TabIndex = 0;
             // 
             // numPartQty
@@ -845,7 +848,7 @@ namespace RepairFlow.UI.Forms
             numPartQty.Maximum = new decimal(new int[] { 999, 0, 0, 0 });
             numPartQty.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numPartQty.Name = "numPartQty";
-            numPartQty.Size = new Size(42, 29);
+            numPartQty.Size = new Size(42, 25);
             numPartQty.TabIndex = 1;
             numPartQty.TextAlign = HorizontalAlignment.Center;
             numPartQty.Value = new decimal(new int[] { 1, 0, 0, 0 });
@@ -857,7 +860,7 @@ namespace RepairFlow.UI.Forms
             numPartPrice.Location = new Point(5, 5);
             numPartPrice.Maximum = new decimal(new int[] { 99999, 0, 0, 0 });
             numPartPrice.Name = "numPartPrice";
-            numPartPrice.Size = new Size(65, 29);
+            numPartPrice.Size = new Size(65, 25);
             numPartPrice.TabIndex = 2;
             numPartPrice.TextAlign = HorizontalAlignment.Center;
             // 
@@ -1065,7 +1068,7 @@ namespace RepairFlow.UI.Forms
             cmbStatus.Items.AddRange(new object[] { "وارد جديد", "قيد الفحص", "تحت الإصلاح", "جاهز", "تم التسليم" });
             cmbStatus.Location = new Point(5, 28);
             cmbStatus.Name = "cmbStatus";
-            cmbStatus.Size = new Size(337, 33);
+            cmbStatus.Size = new Size(337, 28);
             cmbStatus.TabIndex = 1;
             // 
             // btnEditReceipt
@@ -1207,7 +1210,6 @@ namespace RepairFlow.UI.Forms
             pnlSearch.PerformLayout();
             tblMain.ResumeLayout(false);
             pnlSidebar.ResumeLayout(false);
-            flpFilters.ResumeLayout(false);
             pnlMainContent.ResumeLayout(false);
             pnlOrdersView.ResumeLayout(false);
             pnlGridArea.ResumeLayout(false);

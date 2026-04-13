@@ -15,7 +15,7 @@ namespace RepairFlow.DAL
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(
-                @"Server=.;Database=RepairFlowDB;Trusted_Connection=True;TrustServerCertificate=True;");
+                "Server=ENG-ROMANY\\SQLEXPRESS;Database=ProjectForm;Trusted_Connection=True;TrustServerCertificate=True");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -47,6 +47,36 @@ namespace RepairFlow.DAL
                  .WithMany(c => c.Devices)
                  .HasForeignKey(d => d.CustomerId)
                  .OnDelete(DeleteBehavior.Restrict);
+            });
+            modelBuilder.Entity<AppUser>(entity =>
+            {
+                entity.ToTable("Users");
+                entity.HasKey(u => u.Id);
+
+                entity.Property(u => u.FirstName)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(u => u.LastName)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(u => u.Username)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.HasIndex(u => u.Username)
+                      .IsUnique();
+
+                entity.Property(u => u.PhoneNumber)
+                      .IsRequired()
+                      .HasMaxLength(20);
+
+                entity.Property(u => u.PasswordHash)
+                      .IsRequired()
+                      .HasMaxLength(64);
+
+                entity.Ignore(u => u.Password);
             });
 
             modelBuilder.Entity<SparePart>(e =>
@@ -94,17 +124,8 @@ namespace RepairFlow.DAL
                  .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<AppUser>(e =>
-            {
-                e.HasKey(u => u.Id);
-                e.Property(u => u.FirstName).IsRequired().HasMaxLength(50);
-                e.Property(u => u.LastName).IsRequired().HasMaxLength(50);
-                e.Property(u => u.Username).IsRequired().HasMaxLength(50);
-                e.HasIndex(u => u.Username).IsUnique();
-                e.Property(u => u.PasswordHash).IsRequired().HasMaxLength(128);
-                e.Property(u => u.Role).HasConversion<int>();
-                e.Ignore(u => u.FullName);
-            });
+            // AppUser mapping is defined above. The previous duplicate mapping was removed
+            // to avoid referencing properties that do not exist on the AppUser class.
 
             base.OnModelCreating(modelBuilder);
         }

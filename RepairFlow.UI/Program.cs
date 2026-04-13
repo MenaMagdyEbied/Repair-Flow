@@ -12,35 +12,46 @@ namespace RepairFlow.UI
         {
             ApplicationConfiguration.Initialize();
 
-            // ── Migrate & Seed ────────────────────────────────────────────────
             using (var ctx = new AppDbContext())
             {
                 ctx.Database.Migrate();
                 DbInitializer.Seed(ctx);
             }
 
-            // ── Dependency Injection ──────────────────────────────────────────
-            var dbContext        = new AppDbContext();
+            var dbContext = new AppDbContext();
 
-            var deviceRepo       = new DeviceRepository(dbContext);
-            var partRepo         = new SparePartRepository(dbContext);
-            var customerRepo     = new CustomerRepository(dbContext);
-            var dashboardRepo    = new DashboardRepository(dbContext);
+            var deviceRepo = new DeviceRepository(dbContext);
+            var partRepo = new SparePartRepository(dbContext);
+            var customerRepo = new CustomerRepository(dbContext);
+            var dashboardRepo = new DashboardRepository(dbContext);
 
-            var deviceService    = new DeviceService(deviceRepo, partRepo, customerRepo);
-            var partService      = new SparePartService(partRepo);
+            var deviceService = new DeviceService(deviceRepo, partRepo, customerRepo);
+            var partService = new SparePartService(partRepo);
             var dashboardService = new DashboardService(dashboardRepo);
-            var waService        = new WhatsAppService();
-            var printService     = new PrintService();
-            var backupService    = new BackupService();
+            var waService = new WhatsAppService();
+            var printService = new PrintService();
+            var backupService = new BackupService();
 
-            Application.Run(new Forms.MainForm(
-                deviceService,
-                partService,
-                dashboardService,
-                waService,
-                printService,
-                backupService));
+            // Create the login form instance first so we can pass it to MainForm for logout navigation
+            Forms.LoginForm? loginForm = null;
+
+            loginForm = new Forms.LoginForm((username) =>
+            {
+                var mainForm = new Forms.MainForm(
+                    deviceService,
+                    partService,
+                    dashboardService,
+                    waService,
+                    printService,
+                    backupService,
+                    loginForm!);
+
+                mainForm.SetLoggedInUser(username);
+                mainForm.Show();
+            });
+
+            Application.Run(loginForm);
+            
         }
     }
 }
