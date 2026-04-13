@@ -32,7 +32,7 @@ namespace RepairFlow.UI.Forms
         private bool _isEditing;
         private bool _isLoadingData;
         private int  _editingIndex = -1;
-        private TextBox? _txtClient, _txtPhone, _txtDevice, _txtModel, _txtFault, _txtAcc;
+        private TextBox? _txtClient, _txtPhone, _txtDevice, _txtModel, _txtFault, _txtAcc, _txtCost;
 
         private string _receiptSavePath = @"C:\RepairFlow_Receipts";
         private Label? _lblSavePath;
@@ -95,6 +95,7 @@ namespace RepairFlow.UI.Forms
             _txtModel  = CreateEditTextBox(valModel);
             _txtFault  = CreateEditTextBox(valFault);
             _txtAcc    = CreateEditTextBox(valAccessories);
+            _txtCost   = CreateEditTextBox(valCost);
         }
 
         private TextBox CreateEditTextBox(Label target)
@@ -442,6 +443,7 @@ namespace RepairFlow.UI.Forms
             _txtModel!.Text  = d.Model;
             _txtFault!.Text  = d.Fault;
             _txtAcc!.Text    = d.Accessories;
+            _txtCost!.Text   = d.RepairCost?.ToString("0");
 
             valDateIn.Text  = d.ReceivedAt.ToString("yyyy/MM/dd hh:mm tt");
             valDateOut.Text = d.DeliveredAt?.ToString("yyyy/MM/dd hh:mm tt") ?? "لم يتم التسليم";
@@ -613,7 +615,7 @@ namespace RepairFlow.UI.Forms
                 string receipt = dgvOrders.Rows[idx].Cells[0].Value?.ToString() ?? "";
                 var d = _filteredDevices.FirstOrDefault(x => x.ReceiptNumber == receipt);
                 if (d == null) return;
-                _printService.PreviewReceipt(d);
+                _printService.PreviewReceipt(d, _receiptSavePath);
             };
 
             btnEditReceipt.Click += btnEdit_Click;
@@ -832,6 +834,7 @@ namespace RepairFlow.UI.Forms
             ToggleControlPair(valModel,       _txtModel!);
             ToggleControlPair(valFault,       _txtFault!);
             ToggleControlPair(valAccessories, _txtAcc!);
+            ToggleControlPair(valCost,        _txtCost!, true);
 
             if (!_isEditing && _editingIndex >= 0)
             {
@@ -840,17 +843,25 @@ namespace RepairFlow.UI.Forms
             }
         }
 
-        private void ToggleControlPair(Label lbl, TextBox txt)
+        private void ToggleControlPair(Label lbl, TextBox txt, bool cleanCost = false)
         {
             lbl.Visible = !_isEditing;
             txt.Visible =  _isEditing;
-            if (_isEditing) txt.Text = lbl.Text == "—" ? "" : lbl.Text;
+            if (_isEditing) 
+            {
+                string t = lbl.Text == "—" ? "" : lbl.Text;
+                if (cleanCost) t = t.Replace(" ج", "").Trim();
+                txt.Text = t;
+            }
         }
 
         private void SaveCurrentEdits()
         {
-            if (_editingIndex < 0 || _editingIndex >= _devices.Count) return;
-            var d = _devices[_editingIndex];
+            if (_editingIndex < 0 || _editingIndex >= dgvOrders.Rows.Count) return;
+            string receipt = dgvOrders.Rows[_editingIndex].Cells[0].Value?.ToString() ?? "";
+            
+            var d = _deviceService.GetDeviceByReceipt(receipt);
+            if (d == null) return;
 
             if (d.Customer != null)
             {
@@ -862,9 +873,15 @@ namespace RepairFlow.UI.Forms
             d.Fault       = _txtFault!.Text;
             d.Accessories = _txtAcc!.Text;
 
+            if (decimal.TryParse(_txtCost!.Text, out decimal rc))
+                d.RepairCost = rc;
+            else if (string.IsNullOrWhiteSpace(_txtCost!.Text))
+                d.RepairCost = null;
+
             _deviceService.UpdateDeviceDetails(d);
+            
             ShowDetail(_editingIndex);
-            LoadData();
+            LoadData(_currentStatusFilter);
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────

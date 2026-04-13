@@ -5,7 +5,7 @@ namespace RepairFlow.BLL.Services.Interfaces
 {
     public interface IPrintService
     {
-        void PrintReceipt(Device device);
-        void PreviewReceipt(Device device);
+        void PrintReceipt(Device device, string savePath);
+        void PreviewReceipt(Device device, string savePath);
     }
 }
