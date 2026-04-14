@@ -8,7 +8,10 @@ using System.Text.Json;
 
 namespace RepairFlow.Models
 {
-    // Simple JSON-backed user store to avoid external DB dependencies
+    /// <summary>
+    /// Lightweight JSON-backed helper kept for compatibility with existing UI code.
+    /// Note: The UI forms have been updated to use AppDbContext directly for registration/login.
+    /// </summary>
     public static class DatabaseHelper
     {
         private static readonly string DataFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "users.json");
@@ -20,10 +23,7 @@ namespace RepairFlow.Models
             if (_initialized) return;
             lock (_lock)
             {
-                if (!File.Exists(DataFile))
-                {
-                    File.WriteAllText(DataFile, "[]");
-                }
+                if (!File.Exists(DataFile)) File.WriteAllText(DataFile, "[]");
                 _initialized = true;
             }
         }
@@ -37,14 +37,14 @@ namespace RepairFlow.Models
             return sb.ToString();
         }
 
-        private static List<UserModel> LoadAll()
+        private static List<AppUser> LoadAll()
         {
             InitializeDatabase();
             var json = File.ReadAllText(DataFile);
-            return JsonSerializer.Deserialize<List<UserModel>>(json) ?? new List<UserModel>();
+            return JsonSerializer.Deserialize<List<AppUser>>(json) ?? new List<AppUser>();
         }
 
-        private static void SaveAll(List<UserModel> users)
+        private static void SaveAll(List<AppUser> users)
         {
             var json = JsonSerializer.Serialize(users);
             File.WriteAllText(DataFile, json);
@@ -57,37 +57,34 @@ namespace RepairFlow.Models
             return users.Any(u => string.Equals(u.Username, normalized, StringComparison.OrdinalIgnoreCase));
         }
 
-        public static bool RegisterUser(UserModel user)
+        public static bool RegisterUser(AppUser user)
         {
             var users = LoadAll();
-
-            string normalized = user.Username.Trim();
+            var normalized = user.Username.Trim();
             if (users.Any(u => string.Equals(u.Username, normalized, StringComparison.OrdinalIgnoreCase)))
                 throw new Exception("That username is already taken.");
 
             user.FirstName = user.FirstName.Trim();
             user.LastName = user.LastName.Trim();
             user.Username = normalized;
-            user.PhoneNumber = user.PhoneNumber.Trim();
-            user.PasswordHash = HashPassword(user.Password);
+            user.PhoneNumber = user.PhoneNumber?.Trim() ?? string.Empty;
+            user.PasswordHash = HashPassword(user.Password ?? string.Empty);
             user.CreatedAt = DateTime.Now;
 
-            // Simple id generation
             user.Id = users.Count == 0 ? 1 : users.Max(u => u.Id) + 1;
-            user.Password = string.Empty; // don't store plain password
+            user.Password = string.Empty;
 
             users.Add(user);
             SaveAll(users);
             return true;
         }
 
-        public static UserModel? AuthenticateUser(string username, string password)
+        public static AppUser? AuthenticateUser(string username, string password)
         {
             var normalized = username.Trim();
             var hash = HashPassword(password);
             var users = LoadAll();
-            var u = users.FirstOrDefault(x => string.Equals(x.Username, normalized, StringComparison.OrdinalIgnoreCase) && x.PasswordHash == hash);
-            return u;
+            return users.FirstOrDefault(x => string.Equals(x.Username, normalized, StringComparison.OrdinalIgnoreCase) && x.PasswordHash == hash);
         }
     }
 }

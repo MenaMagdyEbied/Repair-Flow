@@ -1,6 +1,9 @@
 using Guna.UI2.WinForms;
 using RepairFlow.Models;
+using RepairFlow.DAL;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -88,19 +91,7 @@ namespace RepairFlow.UI.Forms
 
         private void InitializeComponent()
         {
-            //SuspendLayout();
-            //AutoScaleDimensions = new SizeF(7F, 15F);
-            //AutoScaleMode       = AutoScaleMode.Font;
-            //ClientSize          = new Size(1180, 760);
-            //MinimumSize         = new Size(980, 720);
-            //Name                = "RegisterForm";
-            //Text                = "Create Account";
-            //StartPosition       = FormStartPosition.CenterScreen;
-            //Font                = new Font("Segoe UI", 9F);
-            //BackColor           = PageBg;
-            //FormBorderStyle     = FormBorderStyle.FixedSingle;
-            //MaximizeBox         = false;
-            //ResumeLayout(false);
+        
             SuspendLayout();
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -123,32 +114,7 @@ namespace RepairFlow.UI.Forms
 
         private void BuildUI()
         {
-            //pnlBackground = new Panel { Dock = DockStyle.Fill, BackColor = PageBg };
-            //Controls.Add(pnlBackground);
-
-            //pnlCard = new Guna2Panel
-            //{
-            //    Size             = new Size(CardW, CardH),
-            //    BackColor        = CardBg,
-            //    BorderRadius     = 20,
-            //    ShadowDecoration = { Enabled = true, Color = Color.FromArgb(40, 0, 0, 0), Depth = 22 },
-            //    BorderThickness  = 0,
-            //    Anchor           = AnchorStyles.None
-            //};
-            //CenterCard();
-            //pnlBackground.Controls.Add(pnlCard);
-            //pnlBackground.Resize += (s, e) => CenterCard();
-
-            //BuildLeftPanel();
-
-            //pnlRight = new Panel
-            //{
-            //    Size      = new Size(RightW, CardH),
-            //    Location  = new Point(LeftW, 0),
-            //    BackColor = CardBg
-            //};
-            //pnlCard.Controls.Add(pnlRight);
-            //BuildRightPanel();
+           
             pnlCard = new Guna2Panel
             {
                 Dock = DockStyle.Fill,
@@ -380,6 +346,17 @@ namespace RepairFlow.UI.Forms
             // Username – format check on type, DB check on Leave
             txtUsername.TextChanged += (s, e) => ValidateUsernameFormat();
             txtUsername.Leave       += (s, e) => ValidateUsernameFull();
+            // Also log the database connection being used when user leaves username field for debug
+            txtUsername.Leave += (s, e) =>
+            {
+                try
+                {
+                    using var db = new AppDbContext();
+                    var conn = db.Database.GetDbConnection();
+                    Debug.WriteLine($"[Register] DB={conn.Database}; DataSource={conn.DataSource}");
+                }
+                catch (Exception ex) { Debug.WriteLine("[Register] DB info error: " + ex.Message); }
+            };
 
             // Phone – block non-digits with KeyPress; full check on change/leave
             txtPhone.KeyPress    += Phone_KeyPress;
@@ -455,10 +432,18 @@ namespace RepairFlow.UI.Forms
             if (!Regex.IsMatch(v, @"^[a-zA-Z0-9_]+$"))
                 return Fail(txtUsername, errUsername, "Only letters, numbers, and underscores allowed.");
 
-            // Database uniqueness check
+            // Database uniqueness check against SQL Users table
             try
             {
-                if (DatabaseHelper.UsernameExists(v))
+                using var db = new AppDbContext();
+                // Debug DB connection info
+                try { var conn = db.Database.GetDbConnection(); Debug.WriteLine($"[ValidateUsername] DB={conn.Database}; DataSource={conn.DataSource}"); } catch { }
+
+                string normalizedLower = v.ToLower();
+                bool exists = db.Users.AsNoTracking()
+                                 .Any(u => u.Username.ToLower() == normalizedLower);
+
+                if (exists)
                 {
                     _usernameAvailable = false;
                     return Fail(txtUsername, errUsername, $"'{v}' is already taken. Try another.");
@@ -606,14 +591,14 @@ namespace RepairFlow.UI.Forms
 
             if (!ok) return;
 
-            // Build the model (password stays plain-text here temporarily; DatabaseHelper hashes it before saving with EF Core)
-            var user = new UserModel
+            // Build the model (password stays plain-text here; DatabaseHelper will hash it and save as AppUser)
+            var user = new AppUser
             {
                 FirstName   = txtFirstName.Text.Trim(),
                 LastName    = txtLastName.Text.Trim(),
                 Username    = txtUsername.Text.Trim(),
                 PhoneNumber = txtPhone.Text.Trim(),
-                Password    = txtPassword.Text
+                Password    = txtPassword.Text // transient property used for hashing
             };
 
             try
@@ -621,7 +606,56 @@ namespace RepairFlow.UI.Forms
                 btnRegister.Enabled = false;
                 btnRegister.Text    = "Creating…";
 
-                bool success = DatabaseHelper.RegisterUser(user);
+                bool success;
+                // Try saving to SQL Server via AppDbContext first
+                try
+                {
+                    using var db = new AppDbContext();
+                    // Double-check username uniqueness against SQL to avoid race conditions
+                    string normalized = user.Username.Trim();
+                    var conn = db.Database.GetDbConnection();
+                    string ds = conn.DataSource ?? "(unknown)";
+                    string dbName = conn.Database ?? "(unknown)";
+
+                    // Inform which database we're about to use (temporary debug popup)
+                    MessageBox.Show($"Attempting to save to SQL Server:\nServer = {ds}\nDatabase = {dbName}", "DB Target", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    if (db.Users.AsNoTracking().Any(u => u.Username.ToLower() == normalized.ToLower()))
+                        throw new Exception("That username is already taken.");
+
+                    var entity = new AppUser
+                    {
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Username = user.Username,
+                        PhoneNumber = user.PhoneNumber,
+                        PasswordHash = DatabaseHelper.HashPassword(user.Password),
+                        CreatedAt = DateTime.Now
+                    };
+
+                    db.Users.Add(entity);
+                    int changed = db.SaveChanges();
+                    Debug.WriteLine($"[Register] SQL SaveChanges returned {changed}. New Id={entity.Id}");
+                    success = changed > 0;
+
+                    // Show confirmation where it was saved
+                    MessageBox.Show($"Saved to SQL Server. Rows affected: {changed}\nNew User Id: {entity.Id}\nServer = {ds}\nDatabase = {dbName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception sqlEx)
+                {
+                    // If SQL save fails, fall back to DatabaseHelper (JSON) and show/log
+                    Debug.WriteLine("SQL save failed: " + sqlEx.Message + "\n" + sqlEx.StackTrace);
+                    MessageBox.Show("SQL save failed: " + sqlEx.Message + "\nFalling back to local storage.", "SQL Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    try
+                    {
+                        success = DatabaseHelper.RegisterUser(user);
+                    }
+                    catch (Exception jsonEx)
+                    {
+                        Debug.WriteLine("JSON fallback failed: " + jsonEx.Message + "\n" + jsonEx.StackTrace);
+                        throw; // let outer catch show the error
+                    }
+                }
 
                 if (success)
                 {

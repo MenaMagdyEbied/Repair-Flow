@@ -12,8 +12,8 @@ using RepairFlow.DAL;
 namespace RepairFlow.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260413170525_login")]
-    partial class login
+    [Migration("20260414105427_LoginSetup")]
+    partial class LoginSetup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

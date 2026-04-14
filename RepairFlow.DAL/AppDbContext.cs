@@ -15,7 +15,7 @@ namespace RepairFlow.DAL
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(
-                "Server=ENG-ROMANY\\SQLEXPRESS;Database=ProjectForm;Trusted_Connection=True;TrustServerCertificate=True");
+                "Server=ENG-ROMANY\\SQLEXPRESS;Database=formes;Trusted_Connection=True;TrustServerCertificate=True");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

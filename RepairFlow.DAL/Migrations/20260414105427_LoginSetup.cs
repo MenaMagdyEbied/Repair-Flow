@@ -5,7 +5,7 @@
 namespace RepairFlow.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class login : Migration
+    public partial class LoginSetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

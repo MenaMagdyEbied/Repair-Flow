@@ -50,6 +50,15 @@ namespace RepairFlow.UI
                 mainForm.Show();
             });
 
+            // Show which SQL Server / Database the app will use (helps verify SSMS target)
+            try
+            {
+                using var db = new DAL.AppDbContext();
+                var conn = db.Database.GetDbConnection();
+                System.Windows.Forms.MessageBox.Show($"App DB target:\nServer = {conn.DataSource}\nDatabase = {conn.Database}", "DB Target", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+            }
+            catch { }
+
             Application.Run(loginForm);
             
         }
