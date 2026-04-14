@@ -9,17 +9,17 @@ namespace RepairFlow.BLL.Services
 {
     public class PrintService : IPrintService
     {
-        public void PrintReceipt(Device device)
+        public void PrintReceipt(Device device, string savePath)
         {
-            PerformPrintAction(device, false);
+            PerformPrintAction(device, false, savePath);
         }
 
-        public void PreviewReceipt(Device device)
+        public void PreviewReceipt(Device device, string savePath)
         {
-            PerformPrintAction(device, true);
+            PerformPrintAction(device, true, savePath);
         }
 
-        private void PerformPrintAction(Device device, bool isPreview)
+        private void PerformPrintAction(Device device, bool isPreview, string savePath)
         {
             try
             {
@@ -27,20 +27,11 @@ namespace RepairFlow.BLL.Services
                 
                 if (isPreview)
                 {
-                    ShowCustomPreview(html);
+                    ShowCustomPreview(html, device, savePath);
                 }
                 else
                 {
-                    var browser = new WebBrowser();
-                    browser.ScrollBarsEnabled = false;
-                    browser.DocumentText = "<html></html>"; 
-                    browser.DocumentCompleted += (s, e) =>
-                    {
-                        var b = (WebBrowser)s;
-                        b.Document.Write(html);
-                        b.Refresh();
-                        b.Print();
-                    };
+                    SaveAndPrintSilent(html, device, savePath);
                 }
             }
             catch (Exception ex)
@@ -49,7 +40,7 @@ namespace RepairFlow.BLL.Services
             }
         }
 
-        private void ShowCustomPreview(string html)
+        private void ShowCustomPreview(string html, Device device, string savePath)
         {
             using (var form = new Form())
             {
@@ -81,21 +72,70 @@ namespace RepairFlow.BLL.Services
 
                 btnPrint.FlatAppearance.BorderSize = 0;
                 btnPrint.Click += (s, e) => {
-                    browser.Print();
+                    SaveAndPrintSilent(html, device, savePath);
                     form.Close();
                 };
 
                 browser.DocumentText = "<html></html>";
                 browser.DocumentCompleted += (s, e) => {
-                    browser.Document.Write(html);
-                    if (browser.Document?.Body != null) {
-                        browser.Document.Body.Style = "zoom:100%";
+                    if (browser.ReadyState == WebBrowserReadyState.Complete && browser.Url?.AbsoluteUri == "about:blank")
+                    {
+                        browser.Document.Write(html);
+                        if (browser.Document?.Body != null) {
+                            browser.Document.Body.Style = "zoom:100%";
+                        }
                     }
                 };
 
                 form.Controls.Add(browser);
                 form.Controls.Add(btnPrint);
                 form.ShowDialog();
+            }
+        }
+
+        private void SaveAndPrintSilent(string html, Device device, string savePath)
+        {
+            try
+            {
+                if (!System.IO.Directory.Exists(savePath))
+                    System.IO.Directory.CreateDirectory(savePath);
+
+                string safeCustomerName = string.Join("_", (device.Customer?.Name ?? "Unknown").Split(System.IO.Path.GetInvalidFileNameChars()));
+                string fileName = $"{device.ReceiptNumber}_{safeCustomerName}.pdf";
+                string fullPdfPath = System.IO.Path.Combine(savePath, fileName);
+
+                var converter = new SelectPdf.HtmlToPdf();
+                converter.Options.MarginLeft = 10;
+                converter.Options.MarginRight = 10;
+                converter.Options.MarginTop = 10;
+                converter.Options.MarginBottom = 10;
+
+                // Save the PDF quietly
+                var doc = converter.ConvertHtmlString(html);
+                doc.Save(fullPdfPath);
+                doc.Close();
+
+                // Direct Printing: Since raw Process.Start("Print") fails on systems without a dedicated 
+                // PDF viewer (like Adobe Acrobat) registered for the "Print" verb, we utilize WebBrowser
+                // which relies on the OS's internal Chromium/IE layout to print directly to the default printer.
+                var browser = new WebBrowser();
+                browser.ScrollBarsEnabled = false;
+                browser.DocumentText = "<html></html>"; 
+                browser.DocumentCompleted += (s, e) =>
+                {
+                    // Only print when fully localized and loaded to prevent infinite loops
+                    var b = (WebBrowser)s;
+                    if (b.ReadyState == WebBrowserReadyState.Complete && b.Url?.AbsoluteUri == "about:blank")
+                    {
+                        b.Document.Write(html);
+                        b.Refresh();
+                        b.Print();
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("خطأ أثناء الحفظ أو الطباعة (Silent):\n" + ex.Message, "خطأ");
             }
         }
 
@@ -110,7 +150,8 @@ namespace RepairFlow.BLL.Services
             string qrBase64 = "";
             try {
                 using var qrGenerator = new QRCodeGenerator();
-                using var qrCodeData = qrGenerator.CreateQrCode(device.Id.ToString(), QRCodeGenerator.ECCLevel.Q);
+                string qrUrl = "https://www.linkedin.com/in/mena-magdy-6286841a6";
+                using var qrCodeData = qrGenerator.CreateQrCode(qrUrl, QRCodeGenerator.ECCLevel.Q);
                 using var qrCode = new PngByteQRCode(qrCodeData);
                 byte[] qrAsBytArray = qrCode.GetGraphic(20);
                 qrBase64 = Convert.ToBase64String(qrAsBytArray);
