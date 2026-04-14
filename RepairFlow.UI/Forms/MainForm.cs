@@ -1,3 +1,4 @@
+using finalProject;
 using FontAwesome.Sharp;
 using RepairFlow.BLL.Services;
 using RepairFlow.BLL.Services.Interfaces;
@@ -25,7 +26,7 @@ namespace RepairFlow.UI.Forms
         private Panel?  _activeFilterPanel;
         private Button? _activeFilterBtn;
         private Button? _btnLogin;
-
+        private Inventory _inventoryView;
         private Control? _currentView;
 
         // Edit
@@ -87,6 +88,30 @@ namespace RepairFlow.UI.Forms
             WireEvents();
         }
 
+        private Control _previousView;
+
+        public void SwitchView(Form newForm)
+        {
+           
+            if (_currentView != null)
+            {
+                _previousView = _currentView;
+                _currentView.Hide();
+            }
+
+            newForm.TopLevel = false;
+            newForm.FormBorderStyle = FormBorderStyle.None;
+            newForm.Dock = DockStyle.Fill;
+
+            if (!pnlMainContent.Controls.Contains(newForm))
+                pnlMainContent.Controls.Add(newForm);
+
+            _currentView = newForm;
+
+            newForm.Show();
+            newForm.BringToFront();
+        }
+
         private void InitializeEditControls()
         {
             _txtClient = CreateEditTextBox(valClient);
@@ -137,6 +162,11 @@ namespace RepairFlow.UI.Forms
             var btnInventory = MakeSidebarBtn("  فتح المخزون", Color.FromArgb(44, 62, 107), Color.White, icon: IconChar.BoxOpen);
             btnInventory.Margin = new Padding(4, 0, 4, 4);
             flpFilters.Controls.Add(btnInventory);
+            btnInventory.Click += (s, e) =>
+            {
+                var inventoryForm = new Inventory(_partService, _currentView);
+                SwitchView(inventoryForm);
+            };
 
             // ── Dashboard Button (integrates your Form1 dashboard) ────────────
             var btnDash = MakeSidebarBtn("  Dashboard", Color.FromArgb(52, 73, 94), Color.White, icon: IconChar.ChartBar);
@@ -647,15 +677,22 @@ namespace RepairFlow.UI.Forms
         /// </summary>
         private void SwitchView(Control newView)
         {
+            // Hide previous view instead of removing/disposing it so child
+            // views (Forms hosted here) can return to the same instance when
+            // they call their back logic.
             if (_currentView != null)
             {
-                pnlMainContent.Controls.Remove(_currentView);
-                if (_currentView != pnlOrdersView)
-                    _currentView.Dispose();
+                _previousView = _currentView;
+                _currentView.Hide();
             }
+
             newView.Dock = DockStyle.Fill;
-            pnlMainContent.Controls.Add(newView);
+            if (!pnlMainContent.Controls.Contains(newView))
+                pnlMainContent.Controls.Add(newView);
+
             _currentView = newView;
+            newView.Show();
+            newView.BringToFront();
         }
 
         // ── Parts ─────────────────────────────────────────────────────────────

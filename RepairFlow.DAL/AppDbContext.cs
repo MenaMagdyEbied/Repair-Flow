@@ -15,7 +15,7 @@ namespace RepairFlow.DAL
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(
-                "Server=.;Database=RepairFlowDB;Trusted_Connection=True;TrustServerCertificate=True");
+                @"Server=(localdb)\MSSQLLocalDB;Database=managementDB;Trusted_Connection=True;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

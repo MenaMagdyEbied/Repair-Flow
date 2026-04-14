@@ -41,14 +41,13 @@ namespace RepairFlow.DAL
                 context.SaveChanges();
             }
 
-            var existingCodes = context.SpareParts.Select(p => p.Code).ToHashSet();
-
-            var allParts = GetAllSpareParts();
-            var newParts = allParts.Where(p => !existingCodes.Contains(p.Code)).ToList();
-
-            if (newParts.Any())
+            // Seed spare parts only when the table is empty. Previously the code
+            // re-inserted any missing seeded items on every startup which caused
+            // user deletions/edits to be reverted when the app restarted.
+            if (!context.SpareParts.Any())
             {
-                context.SpareParts.AddRange(newParts);
+                var allParts = GetAllSpareParts();
+                context.SpareParts.AddRange(allParts);
                 context.SaveChanges();
             }
 
