@@ -1,8 +1,3 @@
-╔══════════════════════════════════════════════════════════════╗
-║            RepairFlow - Merged Solution                      ║
-║      (RAR architecture + ZIP ReciptForm merged)              ║
-╚══════════════════════════════════════════════════════════════╝
-
 HOW TO OPEN:
   1. Open THIS folder: RepairFlow-Final\
   2. Double-click: RepairFlow.sln
