@@ -1,5 +1,5 @@
 HOW TO OPEN:
-  1. Open THIS folder: RepairFlow-Final\
+  1. Open THIS folder: RepairFlow-Final
   2. Double-click: RepairFlow.sln
   3. Build → Rebuild Solution  (Ctrl+Shift+B)
   4. Run (F5)
